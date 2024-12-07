@@ -17,4 +17,3 @@
     script.src = 'https://cdn.jsdelivr.net/gh/brilliantdrink/tools-for-bttv/tools-for-bttv.js'
     document.head.appendChild(script)
 })()
-
