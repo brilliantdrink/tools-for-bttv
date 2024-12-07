@@ -1,7 +1,6 @@
-# Tools for BTTV
-
 <div align="center">
-    <img src="tfb-logo.png" alt="The logo for Tools for BTTV"/>
+    <img width="120px" src="tfb-logo.png" alt="The logo for Tools for BTTV"/>
+    <h1>Tools for BTTV</h1>
 </div>
 
 This userscript provides some tools for emote management with BetterTTV and FrankerFaceZ. In the current version it
