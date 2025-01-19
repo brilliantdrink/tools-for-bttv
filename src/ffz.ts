@@ -44,7 +44,15 @@ async function getChannelName() {
 }
 
 async function addDashPanel() {
-  const sidebar = await queryFutureElement('#sidebar') as HTMLDivElement
+  const colLg = await queryFutureElement('.col-lg-12') as HTMLDivElement
+  colLg.classList.remove('col-lg-12')
+  colLg.classList.add('col-sm-9')
+  const sidebar = element('div', {
+    className: 'col-sm-3 sidebar sidebar-offcanvas',
+    id: 'sidebar'
+  }, colLg.parentElement) as HTMLDivElement
+
+  // const sidebar = await queryFutureElement('#sidebar') as HTMLDivElement
   const el = element('div', {className: 'panel panel-default tfb-ffz', id: dashId}, sidebar)
   const title = element('div', {className: 'panel-heading', innerText: extName}, el)
   const container = element('div', {className: 'tfb-ffz-container'}, el)
@@ -88,7 +96,10 @@ async function addEmotePanel() {
       })
     }
     if (overlapping.length + likelyDupes.length === 0) {
-      element('p', {className: 'tfb-info', innerText: 'This emote doesn\'t overlap\nwith any in your library.'}, listItem)
+      element('p', {
+        className: 'tfb-info',
+        innerText: 'This emote doesn\'t overlap\nwith any in your library.'
+      }, listItem)
     }
   }
 }

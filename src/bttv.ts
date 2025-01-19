@@ -56,21 +56,40 @@ async function addDashPanel() {
   element('p', {className: 'tfb-title', innerText: extName}, el)
   emoteListDetails('Overlapping emote names', emoteIndex.overlappingHTML, el)
   emoteListDetails('Likely duplicates', emoteIndex.likelyDuplicatesHTML, el)
+  /*const runPerceptualDuplicateDetectionButton = element('button', {innerText: 'Run'})
+  runPerceptualDuplicateDetectionButton.addEventListener('click', () => {
+    const emoteAmount = emoteIndex.allEmotes.length
+    const comparisonsAmount = (emoteAmount ** 2) / 2 - emoteAmount / 2
+    const progress = element('progress', {max: comparisonsAmount, value: 0}, perceptualDuplicates)
+    const comparisonsDone = (done: number) => `${done} / ${comparisonsAmount} comparisons (${emoteAmount} emotes)`
+    const progressLabel = element('span', {innerText: comparisonsDone(0)}, perceptualDuplicates)
+    emoteIndex.updatePerceptualDuplicates(done => {
+      progress.value = done
+      progressLabel.innerText = comparisonsDone(done)
+    })
+  })
+  const perceptualDuplicates = element('div', {
+    children: [
+      runPerceptualDuplicateDetectionButton,
+      emoteIndex.perceptualDuplicatesHTML
+    ]
+  })
+  emoteListDetails('Visually similar', perceptualDuplicates, el, true)*/
 
   emoteIndex.updateEmotes(await getChannelName())
 }
 
 async function addEmotePanel() {
-  const firstEmotePanel = await queryFutureElement('[class*=Emote_panel]') as HTMLDivElement
+  const firstEmotePanel = await queryFutureElement('[class*=_panel]') as HTMLDivElement
   const wrapper = element('div', {className: 'tfb-Emote_row'})
   firstEmotePanel.replaceWith(wrapper)
   firstEmotePanel.style.flexGrow = '1'
   firstEmotePanel.style.display = 'flex'
   firstEmotePanel.style.flexDirection = 'column'
-  const emoteName = (firstEmotePanel.querySelector('[class*=Emote_section] > p') as HTMLParagraphElement | null)?.innerText.trim()
-  const emoteSectionClasses = firstEmotePanel.querySelector('[class*=Emote_section]')?.classList.toString()
-  const emoteSectionClassName = Array.from(firstEmotePanel.querySelector('[class*=Emote_section]')?.classList ?? [])
-    .find(name => name.includes('Emote_section'))
+  const emoteName = (firstEmotePanel.querySelector('[class*=_section] > p') as HTMLParagraphElement | null)?.innerText.trim()
+  const emoteSectionClasses = firstEmotePanel.querySelector('[class*=_section]')?.classList.toString()
+  const emoteSectionClassName = Array.from(firstEmotePanel.querySelector('[class*=_section]')?.classList ?? [])
+    .find(name => name.includes('_section'))
   const container = element('div', {className: `tfb-emotes-list chakra-stack ${emoteSectionClassName}`})
   const el = element('div', {
     className: `tfb-bttv ${firstEmotePanel.classList.toString()}`,
