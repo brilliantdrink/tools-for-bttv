@@ -1,0 +1,80 @@
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem
+}
+
+.ffzCol {
+  padding: 1rem 1.5rem;
+}
+
+.headingP {
+  margin: 0;
+}
+
+.emoteRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  flex-direction: row;
+  gap: 20px;
+
+  &.halfWidth {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .twoWide {
+    grid-column: span 2;
+  }
+}
+
+.col.panelHeader {
+  $pad-y: .5rem;
+  padding-top: $pad-y;
+  padding-bottom: $pad-y;
+  gap: .2rem;
+}
+
+.description {
+  font-size: .7rem;
+  color: var(--panel-title-color);
+}
+
+.subHeader {
+  font-size: .9rem;
+  color: var(--panel-title-color);
+}
+
+.ffzSubHeader {
+  font-size: 1.2rem;
+  opacity: .5;
+  margin-bottom: 0;
+}
+
+div.emoteList {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: .7rem;
+}
+
+.ffzDivider {
+  margin: 1rem 0;
+}
+
+.panelSectionHeading {
+  margin: 0;
+}
+
+.ffzPanelSectionHeading {
+  padding: 0 1.5rem;
+
+  &:first-of-type {
+    margin-top: 1rem;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+}

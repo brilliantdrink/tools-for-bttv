@@ -3,26 +3,35 @@
     <h1>Tools for BTTV</h1>
 </div>
 
-This userscript provides some tools for emote management with BetterTTV and FrankerFaceZ. In the current version it
-shows you what emote names are duplicates (overlapping) within and across emote providers. It also shows emotes that are
-likely duplicates, i.e. where the emote name is not an exact match like for "monkaHMM" and "monkaHmm".
+> [!WARNING]  
+> This browser extension is still under development and may have bugs and performance issues.
+
+Tools for BTTV is a browser extension that provides additional features for emote management with BetterTTV and
+FrankerFaceZ (support for 7tv is planned).
+Current features:
+
+- Duplicate emotes detection for channel dashboard and on emote pages (available on BTTV and FFZ)
+- Emote usage data visible on dashboard and emote page (available on BTTV)
+- Free-form notes and "do not remove" tags for emotes (available on BTTV)
+
+These features will also be implemented for the other platforms. Planned features include:
+
+- Seasonal / themed emote collections / variants with automated (one-click) replacement for the whole collection
+- Notification (on-site) about deleted emotes
+- Emote fallbacks for deleted emotes
+- Categorize emote usage to check which bots are using which emotes
 
 ## Install
 
-You need a userscripts manager for your browser:
+- **Chrome** and **Chrome-like browsers**  
+  incl. Brave, Opera, Opera GX, Edge  
+  https://chromewebstore.google.com/detail/tools-for-bttv-beta/lpdmpiigjiidppfebmoidccikbmkielg
 
-- For Chrome-like (Edge, Brave,
-  Opera): [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-- For Firefox-like: [GreaseMonkey](https://addons.mozilla.org/firefox/addon/greasemonkey/)
-- For Maxthon-like: [ViolentMonkey](https://extension.maxthon.com/detail/index.php?view_id=1680)
-- For Safari-like [Userscripts](https://apps.apple.com/app/apple-store/id1463298887)
+- **Firefox**  
+  ⚠️ Under review at time of writing, link will only work after approval  
+  https://addons.mozilla.org/en-US/firefox/addon/tools-for-bttv-beta/
 
-Then, go to
-[the userscript for Tools for BTTV](https://cdn.jsdelivr.net/gh/brilliantdrink/tools-for-bttv/tools-for-bttv.user.js)
-and click "Install". If your userscripts manager doesn't open when following this link, create a new userscript in your
-manager and add the content of the userscript file manually.
-
-## Screenshots
+## Screenshots (Outdated)
 
 <div align="center">
     <img width="40%" src="img/bttv-dash.png" alt="Screenshot of the tool's panel on the BTTV dashboard"/>
@@ -32,3 +41,29 @@ manager and add the content of the userscript file manually.
     <img width="40%" src="img/bttv-emote.png" alt="Screenshot of the tool's panel on a BTTV emote page"/>
     <img width="40%" src="img/ffz-emote.png" alt="Screenshot of the tool's panel on a FFZ emote page"/>
 </div>
+
+## Develop / Review
+
+### Prerequisites
+
+- Nodejs with npm
+
+### Build
+
+First install the dependencies
+
+```shell
+npm i
+```
+
+Then build the files
+
+```shell
+npm run build
+```
+
+Package with
+
+```shell
+npm run pack-extension
+```

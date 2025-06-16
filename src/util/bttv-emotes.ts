@@ -1,5 +1,5 @@
-import {bttvFormatEmoteToToolsEmote} from './variables'
-import {FFZChannelData} from './ffz-emotes'
+import {bttvFormatEmoteToToolsEmote} from '../variables'
+import {batchedFetch} from './batched-fetch'
 
 export interface BTTVUserData {
   id: string,
@@ -77,21 +77,29 @@ export interface BTTVGlobalEmote {
   userId: string,
 }
 
-export async function getBTTVEmotes(channel: string) {
+export async function BTTVgetUser() {
   const authHeader = {headers: {Authorization: `Bearer ${localStorage.getItem('USER_TOKEN')?.replaceAll('"', '')}`}}
-  const bttvLoggedInAccount = await fetch(`https://api.betterttv.net/3/account`, authHeader).then(res => res.json()) as BTTVDashboardData
+  return await fetch(`https://api.betterttv.net/3/account`, authHeader).then(res => res.json()) as BTTVDashboardData
+}
+
+export async function BTTVgetChannelId(channel: string) {
+  const authHeader = {headers: {Authorization: `Bearer ${localStorage.getItem('USER_TOKEN')?.replaceAll('"', '')}`}, debounceTime: 200}
+  const bttvLoggedInAccount = await batchedFetch(`https://api.betterttv.net/3/account`, authHeader).then(res => res.json()) as BTTVDashboardData
   let userId: string | undefined
   if (channel.toLowerCase() === bttvLoggedInAccount.name) userId = bttvLoggedInAccount.providerId
   else {
-    const bttvDashboards = await fetch(`https://api.betterttv.net/3/account/dashboards`, authHeader).then(res => res.json()) as BTTVDashboardsData[]
+    const bttvDashboards = await batchedFetch(`https://api.betterttv.net/3/account/dashboards`, authHeader).then(res => res.json()) as BTTVDashboardsData[]
     userId = bttvDashboards.find(dash => channel.toLowerCase() === dash.name)?.providerId
   }
-  if (!userId) throw new Error('Found invalid user')
-  const bttvUserData = await fetch(`https://api.betterttv.net/3/cached/users/twitch/${userId}`).then(res => res.json()) as BTTVUserData
+  return userId
+}
+
+export async function getBTTVEmotes(twitchId: string) {
+  const bttvUserData = await fetch(`https://api.betterttv.net/3/cached/users/twitch/${twitchId}`).then(res => res.json()) as BTTVUserData
   return bttvUserData.channelEmotes.concat(bttvUserData.sharedEmotes).map(bttvFormatEmoteToToolsEmote)
 }
 
-export async function getBTTVGlobalEmotes(channel: string) {
-  const bttvEmotes =  await fetch(`https://api.betterttv.net/3/cached/emotes/global`).then(res => res.json()) as BTTVGlobalEmote[]
+export async function getBTTVGlobalEmotes() {
+  const bttvEmotes = await fetch(`https://api.betterttv.net/3/cached/emotes/global`).then(res => res.json()) as BTTVGlobalEmote[]
   return bttvEmotes.map(bttvFormatEmoteToToolsEmote)
 }

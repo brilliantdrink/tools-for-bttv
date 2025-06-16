@@ -1,0 +1,69 @@
+$twitchDarker: #5c16c5;
+$twitchDark: #772ce8;
+$twitch: #9146ff;
+
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding-bottom: 1.4rem;
+}
+
+.notice {
+  font-size: .9rem;
+  color: var(--panel-title-color);
+  text-align: center;
+
+  em {
+    position: relative;
+    right: .1em;
+  }
+
+  .info {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+
+    .icon {
+      height: 1.3rem;
+      margin: 0 .3rem;
+    }
+
+    .tooltip {
+      position: absolute;
+      top: -.4rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
+      padding: .5rem .8rem;
+      width: 26ch;
+      text-wrap: balance;
+      text-align: left;
+      pointer-events: none;
+    }
+
+    &:hover .tooltip {
+      opacity: 1;
+    }
+  }
+}
+
+.button {
+  display: inline-block;
+  padding: .3rem 1rem;
+  margin: 0 auto;
+  background: $twitch;
+  border-radius: var(--chakra-radii-md);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: .9rem;
+  font-weight: 700;
+
+  &:hover {
+    background: $twitchDark;
+  }
+
+  &:active {
+    background: $twitchDarker;
+  }
+}

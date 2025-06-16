@@ -1,0 +1,102 @@
+.usage {
+  $margin: .3rem;
+  position: absolute;
+  right: $margin;
+  bottom: $margin;
+
+  font-size: .9rem;
+  color: transparentize(white, .2);
+  $size: 1.6em;
+  height: $size;
+  min-width: $size;
+  line-height: 1;
+  text-align: center;
+
+  border-radius: var(--chakra-radii-md);
+  $border-width: 2px;
+  border: $border-width solid transparent;
+  background-size: calc(100% + $border-width * 2) calc(100% + $border-width * 2);
+  background-position: -#{$border-width} -#{$border-width};
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.noUse {
+    background: transparent;
+    border-color: transparentize(white, 0.9);
+    color: transparentize(white, .5);
+  }
+
+  @function chakra-gradient($color) {
+    @return linear-gradient(to bottom right, var(--chakra-colors-#{$color}-500), var(--chakra-colors-#{$color}-800))
+  }
+
+  &.lowUse {
+    background-image: chakra-gradient(gray);
+  }
+
+  &.avgUse {
+    background-image: chakra-gradient(blue);
+  }
+
+  &.highUse {
+    background-image: chakra-gradient(purple);
+  }
+
+  .tooltip {
+    bottom: -.4rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+  }
+
+  &:hover {
+    .tooltip {
+      opacity: 1;
+    }
+  }
+}
+
+.tooltip {
+  position: absolute;
+  padding: .1rem .5rem;
+
+  background: transparentize(white, .2);
+  backdrop-filter: blur(5px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-weight: 600;
+  font-size: .9rem;
+  color: black;
+  line-height: 1.4;
+  text-wrap: nowrap;
+  border-radius: var(--chakra-radii-md);
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+
+  z-index: 2;
+}
+
+.dnr {
+  $margin: .5rem;
+  position: absolute;
+  right: $margin;
+  top: $margin;
+  $size: 1.2em;
+  height: $size;
+  width: $size;
+
+  color: transparentize(white, .5);
+
+  .tooltip {
+    top: -.4rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+  }
+
+  &:hover {
+    .tooltip {
+      opacity: 1;
+    }
+  }
+}

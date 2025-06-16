@@ -1,0 +1,22 @@
+.emoteUsagePanel {
+  .usageNumber {
+    font-size: 2rem;
+  }
+
+  .usageLabel {
+    font-size: 0.7rem;
+    color: var(--panel-title-color);
+  }
+
+  min-height: 14rem;
+
+  .sectionChart {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+
+  .chartWrapper {
+    flex-grow: 1;
+  }
+}
