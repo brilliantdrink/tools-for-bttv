@@ -11,8 +11,8 @@ FrankerFaceZ (support for 7tv is planned).
 Current features:
 
 - Duplicate emotes detection for channel dashboard and on emote pages (available on BTTV and FFZ)
-- Emote usage data visible on dashboard and emote page (available on BTTV)
-- Free-form notes and "do not remove" tags for emotes (available on BTTV)
+- Emote usage data visible on dashboard and emote page (available on BTTV and FFZ)
+- Free-form notes and "do not remove" tags for emotes (available on BTTV and FFZ)
 
 These features will also be implemented for the other platforms. Planned features include:
 
@@ -28,21 +28,27 @@ These features will also be implemented for the other platforms. Planned feature
   https://chromewebstore.google.com/detail/tools-for-bttv-beta/lpdmpiigjiidppfebmoidccikbmkielg
 
 - **Firefox**  
-  ⚠️ Under review at time of writing, link will only work after approval  
   https://addons.mozilla.org/en-US/firefox/addon/tools-for-bttv-beta/
 
-## Screenshots (Outdated)
+## Screenshots
 
 <div align="center">
-    <img width="40%" src="img/bttv-dash.png" alt="Screenshot of the tool's panel on the BTTV dashboard"/>
-    <img width="40%" src="img/ffz-channel.png" alt="Screenshot of the tool's panel on the FFZ channel page"/>
+    <img width="45%" src="img/bttv-dash.jpg" alt="Screenshot of the tool's panel on the BTTV dashboard"/>
+    <img width="45%" src="img/ffz-dash.jpg" alt="Screenshot of the tool's panel on the FFZ channel page"/>
 </div>
 <div align="center">
-    <img width="40%" src="img/bttv-emote.png" alt="Screenshot of the tool's panel on a BTTV emote page"/>
-    <img width="40%" src="img/ffz-emote.png" alt="Screenshot of the tool's panel on a FFZ emote page"/>
+    <img width="35%" src="img/bttv-dash-widget.jpg" alt="Screenshot of the tool's panel on the BTTV dashboard"/>
+    <img width="35%" src="img/ffz-dash-widget.jpg" alt="Screenshot of the tool's panel on the FFZ channel page"/>
+</div>
+<div align="center">
+    <img width="45%" src="img/bttv-emote.jpg" alt="Screenshot of the tool's panel on a BTTV emote page"/>
+    <img width="45%" src="img/ffz-emote.jpg" alt="Screenshot of the tool's panel on a FFZ emote page"/>
+</div>
+<div align="center">
+    <img width="30%" src="img/ffz-dupes.jpg" alt="Screenshot of the tool's panel on a FFZ emote page"/>
 </div>
 
-## Develop / Review
+## Build for Reviewing
 
 ### Prerequisites
 

@@ -1,0 +1,46 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+
+  .headingP {
+    margin: 0;
+  }
+
+  .description {
+    font-size: .7rem;
+    color: var(--panel-title-color);
+  }
+
+  .content {
+    flex-grow: 1;
+
+    &.ffz {
+      padding: 1rem 1.5rem;
+    }
+  }
+
+  .sectionHeading {
+    margin: 0;
+  }
+
+  .ffzSectionHeading {
+    padding: 0 1.5rem;
+
+    &:first-of-type {
+      margin-top: 1rem;
+    }
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  &.header {
+    $pad-y: .5rem;
+    padding-top: $pad-y;
+    padding-bottom: $pad-y;
+    gap: .2rem;
+  }
+}

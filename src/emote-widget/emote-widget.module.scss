@@ -1,15 +1,16 @@
 .col {
   display: flex;
   flex-direction: column;
-  gap: .5rem
+  gap: .5rem;
+
+  &.ffz {
+    margin-top: 2em;
+  }
 }
 
-.ffzCol {
-  padding: 1rem 1.5rem;
-}
-
-.headingP {
-  margin: 0;
+.head {
+  display: flex;
+  justify-content: space-between;
 }
 
 .emoteRow {
@@ -19,25 +20,13 @@
   flex-direction: row;
   gap: 20px;
 
-  &.halfWidth {
+  &.halfWidth, &.ffz {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .twoWide {
     grid-column: span 2;
   }
-}
-
-.col.panelHeader {
-  $pad-y: .5rem;
-  padding-top: $pad-y;
-  padding-bottom: $pad-y;
-  gap: .2rem;
-}
-
-.description {
-  font-size: .7rem;
-  color: var(--panel-title-color);
 }
 
 .subHeader {
@@ -60,21 +49,4 @@ div.emoteList {
 
 .ffzDivider {
   margin: 1rem 0;
-}
-
-.panelSectionHeading {
-  margin: 0;
-}
-
-.ffzPanelSectionHeading {
-  padding: 0 1.5rem;
-
-  &:first-of-type {
-    margin-top: 1rem;
-  }
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
 }

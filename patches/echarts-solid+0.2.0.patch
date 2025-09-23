@@ -1,0 +1,45 @@
+diff --git a/node_modules/echarts-solid/dist/dev.js b/node_modules/echarts-solid/dist/dev.js
+index 1958cde..ba64cfe 100644
+--- a/node_modules/echarts-solid/dist/dev.js
++++ b/node_modules/echarts-solid/dist/dev.js
+@@ -1,6 +1,6 @@
+ import { use, effect, style, className, createComponent, mergeProps, template } from 'solid-js/web';
+ import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
+-import { init } from 'echarts';
++import { init, use as echartsUse } from 'echarts/core';
+ import { mergeRefs } from '@solid-primitives/refs';
+ import { createElementSize } from '@solid-primitives/resize-observer';
+ 
+@@ -118,4 +118,4 @@ var EChartsAutoSize = (props) => {
+   }));
+ };
+ 
+-export { ECharts, EChartsAutoSize };
++export { ECharts, EChartsAutoSize, echartsUse as use };
+diff --git a/node_modules/echarts-solid/dist/index.d.ts b/node_modules/echarts-solid/dist/index.d.ts
+index 824d183..28a47a7 100644
+--- a/node_modules/echarts-solid/dist/index.d.ts
++++ b/node_modules/echarts-solid/dist/index.d.ts
+@@ -44,3 +44,4 @@ interface EChartsProps extends EChartsBaseProps {
+ declare const ECharts: (props: EChartsProps) => solid_js.JSX.Element;
+ 
+ export { ECharts, EChartsAutoSize, type EChartsAutoSizeProps, type EChartsBaseProps, type EChartsEventHandler, type EChartsEventHandlerDefinition, type EChartsProps, type EventHandlers, type InitOptions };
++export {use} from 'echarts/core';
+diff --git a/node_modules/echarts-solid/dist/index.js b/node_modules/echarts-solid/dist/index.js
+index 1958cde..ba64cfe 100644
+--- a/node_modules/echarts-solid/dist/index.js
++++ b/node_modules/echarts-solid/dist/index.js
+@@ -1,6 +1,6 @@
+ import { use, effect, style, className, createComponent, mergeProps, template } from 'solid-js/web';
+ import { onMount, onCleanup, createEffect, on, createSignal } from 'solid-js';
+-import { init } from 'echarts';
++import { init, use as echartsUse } from 'echarts/core';
+ import { mergeRefs } from '@solid-primitives/refs';
+ import { createElementSize } from '@solid-primitives/resize-observer';
+ 
+@@ -118,4 +118,4 @@ var EChartsAutoSize = (props) => {
+   }));
+ };
+ 
+-export { ECharts, EChartsAutoSize };
++export { ECharts, EChartsAutoSize, echartsUse as use };

@@ -1,40 +1,59 @@
-import {createEffect, createSignal} from 'solid-js'
+import {createEffect, createSignal, onMount} from 'solid-js'
 import {queryFutureElement} from './future-element'
 import {BTTVgetChannelId} from './bttv-emotes'
 import {EmoteProvider} from './emote-context'
-import {FFZgetChannelId} from './ffz-emotes'
+import {FFZgetChannelDisplayName, FFZgetChannelId} from './ffz-emotes'
 
-export function useChannel(provider: EmoteProvider) {
+export function createChannelState(provider: EmoteProvider, observe = false) {
   const [channelDisplayName, setChannelDisplayName] = createSignal<string>(null!)
   const [channelName, setChannelName] = createSignal<string>(null!)
   const [channelId, setChannelId] = createSignal<string>(null!)
 
-  createEffect(async () => {
-    let getChannelName = null
-    if (provider === EmoteProvider.BTTV) getChannelName = getChannelDisplayNameBttv
-    else if (provider === EmoteProvider.FFZ) getChannelName = getChannelDisplayNameFfz
-    if (!getChannelName) return
-    await getChannelName().then(displayName => {
+  onMount(async () => {
+    if (!(provider in getChannelName)) return
+    await getChannelName[provider]().then(displayName => {
+      if (!displayName) return
       setChannelDisplayName(displayName)
       setChannelName(displayName.toLowerCase())
     })
-    const observer = new MutationObserver(() => getChannelName().then(setChannelName))
-    observer.observe(
-      await queryFutureElement('[id*=menu-button]:has(img)') as HTMLElement,
-      {childList: true, subtree: true}
-    )
+    if (observe) {
+      const observer = new MutationObserver(() => getChannelName[provider]().then(setChannelName))
+      observer.observe(
+        await queryFutureElement('[id*=menu-button]:has(img)') as HTMLElement,
+        {childList: true, subtree: true}
+      )
+    }
   })
 
   createEffect(() => {
     if (!channelName()) return
-    let getChannelId = null
-    if (provider === EmoteProvider.BTTV) getChannelId = BTTVgetChannelId
-    else if (provider === EmoteProvider.FFZ) getChannelId = FFZgetChannelId
-    if (!getChannelId) return
-    getChannelId(channelName()).then(setChannelId)
+    if (!(provider in getChannelId)) return
+    getChannelId[provider](channelName()).then(setChannelId)
+    getChannelDisplayName[provider as keyof typeof getChannelDisplayName]?.(channelName()).then(setChannelDisplayName)
   })
 
-  return {channelDisplayName, channelName, channelId}
+  if (observe) return {channelDisplayName, channelName, channelId}
+  else return {
+    channelDisplayName,
+    channelName,
+    channelId,
+    setChannelName: (name: string) => setChannelName(name.toLowerCase()),
+    setChannelId
+  }
+}
+
+const getChannelName = {
+  [EmoteProvider.BTTV]: getChannelDisplayNameBttv,
+  [EmoteProvider.FFZ]: getChannelDisplayNameFfz,
+}
+
+const getChannelDisplayName = {
+  [EmoteProvider.FFZ]: FFZgetChannelDisplayName,
+}
+
+const getChannelId = {
+  [EmoteProvider.BTTV]: BTTVgetChannelId,
+  [EmoteProvider.FFZ]: FFZgetChannelId,
 }
 
 export async function getChannelDisplayNameBttv() {
@@ -42,5 +61,6 @@ export async function getChannelDisplayNameBttv() {
 }
 
 export async function getChannelDisplayNameFfz() {
-  return ((await queryFutureElement('#channel')).childNodes.item(0) as Text).wholeText.trim()
+  const title = (document.querySelector('#channel')?.childNodes.item(0) as Text | undefined)?.wholeText.trim()
+  return title ?? (document.querySelector('img.navbar-avatar') as null | HTMLImageElement)?.title
 }

@@ -65,13 +65,18 @@ export interface FFZSetData {
   }
 }
 
-const channelIdCache: Record<string, number> = {}
+const channelCache: Record<string, FFZChannelData> = {}
 
 export async function FFZgetChannelId(channel: string) {
-  if (channel in channelIdCache) return channelIdCache[channel]
+  if (channel in channelCache) return channelCache[channel].user.twitch_id
+  channelCache[channel] = await fetch(`https://api.frankerfacez.com/v1/user/${channel.toLowerCase()}`).then(res => res.json()) as FFZChannelData
+  return channelCache[channel].user.twitch_id
+}
+
+export async function FFZgetChannelDisplayName(channel: string) {
+  if (channel in channelCache) return channelCache[channel].user.display_name
   const ffzChannelData = await fetch(`https://api.frankerfacez.com/v1/user/${channel.toLowerCase()}`).then(res => res.json()) as FFZChannelData
-  channelIdCache[channel] = ffzChannelData.user.twitch_id
-  return ffzChannelData.user.twitch_id
+  return ffzChannelData.user.display_name
 }
 
 export async function getFFZEmotes(twitchId: string): Promise<Omit<EmoteData, 'provider'>[]> {

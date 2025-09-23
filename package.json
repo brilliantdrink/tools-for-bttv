@@ -1,13 +1,14 @@
 {
   "name": "tools-for-bttv",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "node build.js",
     "watch": "NODE_ENV=watch node build.js",
-    "pack-extension": "rm -f tools-for-bttv.zip && zip tools-for-bttv.zip manifest.json tools-for-bttv.js tools-for-bttv.css tfb-logo.png icons/*"
+    "pack-extension": "rm -f tools-for-bttv.zip && zip tools-for-bttv.zip manifest.json tools-for-bttv.js tools-for-bttv.css tfb-logo.png icons/*",
+    "postinstall": "patch-package"
   },
   "private": true,
   "devDependencies": {
@@ -17,6 +18,10 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.44.2",
+    "@solid-primitives/intersection-observer": "^2.2.2",
+    "@solid-primitives/mutation-observer": "^1.2.2",
+    "@solid-primitives/resource": "^0.4.2",
+    "@solid-primitives/scheduled": "^1.5.2",
     "blockhash-core": "^0.1.0",
     "classnames": "^2.5.1",
     "echarts": "^5.6.0",
@@ -29,6 +34,7 @@
     "lodash.debounce": "^4.0.8",
     "lodash.isequal": "^4.5.0",
     "mathjs": "^14.5.2",
+    "patch-package": "^8.0.0",
     "path-to-regexp": "^8.2.0",
     "sass": "^1.86.0",
     "solid-js": "^1.9.7"

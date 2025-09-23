@@ -30,9 +30,14 @@ export function batchedFetch(input: RequestInfo | URL, init?: RequestInit & { de
     delete resolves[key]
     delete promises[key]
     delete timeouts[key]
-    let json: any = null
+    let json: any = null, text: any = null
     ;(init?.useAuth ? authFetch : fetch)(input, init).then(response => {
       const consumeJson = response.json.bind(response)
+      const consumeText = response.text.bind(response)
+      response.text = () => {
+        if (!text) text = consumeText()
+        return text
+      }
       response.json = () => {
         if (!json) json = consumeJson()
         return json

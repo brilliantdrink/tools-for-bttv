@@ -18,3 +18,21 @@ export function queryFutureElement<E extends Element = Element>(selector: string
     observer.observe(document.body, {childList: true, subtree: true});
   });
 }
+
+export async function* queryFutureElements(selector: string, options?: {timeout?: number, abort?: AbortSignal}) {
+  const yielded: Element[] = []
+  let lastYield = performance.now()
+  let abort = false
+  if (options && options.abort) options.abort.onabort = () => abort = true
+  const timeout = options?.timeout ?? 3_000
+  do {
+    if (abort || performance.now() - lastYield > timeout) break
+    const matches = document.querySelectorAll(selector)
+    for (const element of matches) {
+      if (yielded.includes(element)) continue
+      yielded.push(element)
+      lastYield = performance.now()
+      yield element;
+    }
+  } while (await new Promise(resolve => setTimeout(() => resolve(true), 50)))
+}

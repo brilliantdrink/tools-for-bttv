@@ -1,14 +1,21 @@
+@font-face {
+  font-family: 'Sofia Sans Condensed';
+  src: url('../fonts/SofiaSansCondensed-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .emoteUsagePanel {
   .usageNumber {
-    font-size: 2rem;
+    font-size: 2em;
   }
 
   .usageLabel {
-    font-size: 0.7rem;
+    font-size: 0.7em;
     color: var(--panel-title-color);
   }
 
-  min-height: 14rem;
+  min-height: 14em;
 
   .sectionChart {
     display: flex;
@@ -18,5 +25,7 @@
 
   .chartWrapper {
     flex-grow: 1;
+    font-feature-settings: "ss02";
+    letter-spacing: -.01em;
   }
 }

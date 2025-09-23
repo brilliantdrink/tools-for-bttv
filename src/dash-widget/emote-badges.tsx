@@ -1,58 +1,101 @@
-import {createMemo, createResource, Show} from 'solid-js'
+import {Accessor, createMemo, Resource, Show} from 'solid-js'
 import cn from 'classnames'
-import {mean, std} from 'mathjs'
-import {useUsages} from '../util/emote-usage'
-import {useChannel} from '../util/channel'
-import {batchedFetch} from '../util/batched-fetch'
+// import {mean} from 'mathjs'
+import {createVisibilityObserver} from '@solid-primitives/intersection-observer'
+import {createEmoteUsagesResource} from '../util/emote-usage'
+import {createChannelState} from '../util/channel'
 import {EmoteProvider} from '../util/emote-context'
+import {createBatchedValues} from '../util/batched-resource'
 
 import emoteBadgeStyles from './emote-badges.module.scss'
+import {createAccumulatedValues} from '../util/accumulated-values'
+import {createEmoteNotesResource} from '../util/emote-notes'
+import {createLatched} from '../util/latched'
 
-export default function EmoteBadges(props: { emoteId: string, emoteIds: string[], provider: EmoteProvider }) {
-  const {channelId} = useChannel(props.provider)
-  const usage = useUsages(props.provider, props.emoteIds, channelId)
-  const [emoteNotes] = createResource(channelId, async (channelId) => {
-    return await batchedFetch(`https://${API_HOST}/emote/${props.provider.toLowerCase()}/${props.emoteIds.join(',')}/notes/${channelId}`, {
-      debounceTime: 300,
-      useAuth: true,
-    })
-      .then(res => res.json() as Promise<Record<string, { note: string, doNotRemove: boolean }>>)
-      .catch(() => null)
+const usageWords = {
+  [emoteBadgeStyles.noUse]: 'No',
+  [emoteBadgeStyles.lowUse]: 'Low',
+  [emoteBadgeStyles.avgUse]: 'Average',
+  [emoteBadgeStyles.highUse]: 'High',
+}
+const numberFormatter = Intl.NumberFormat('en', {notation: 'compact'})
+
+export default function EmoteBadges(props: { emoteId: string, provider: EmoteProvider }) {
+  const {channelId} = createChannelState(props.provider)
+  let visCatcher: HTMLDivElement | undefined;
+  const useVisibilityObserver = createVisibilityObserver({threshold: 0.1});
+  const visible = useVisibilityObserver(() => visCatcher);
+  const allVisibilities = createAccumulatedValues('visibility', props.emoteId, visible, true)
+  const idsBatched = createBatchedValues('usage', props.emoteId, props.emoteId)
+  const batchVisible = createMemo(() => {
+    return allVisibilities() && Object.entries(allVisibilities())
+      .filter(([id]) => idsBatched()?.includes(id))
+      .reduce((acc, [, visible]) => acc || visible, false)
   })
-  const overallUsage = createMemo(() => {
-    return Object.fromEntries(Object.entries(usage() ?? {})
-      .map(([emoteId, usageData]) => [emoteId, usageData.reduce((acc, [, val]) => acc + val, 0)])
-    )
+  const showBadges = createLatched(batchVisible)
+
+  const usagesBatched = createMemo(() => {
+    if (!showBadges()) return null
+    const idsBatchedValue = idsBatched()
+    if (idsBatchedValue !== null) return createEmoteUsagesResource(props.provider, idsBatched as Accessor<string[]>, channelId)
+    else return null
   })
+  const usage = createMemo(() => {
+    const resource = usagesBatched() as Resource<Record<string, [string, number][]>>
+    if (!resource || resource.loading) return null
+    else {
+      const usages = resource()
+      if (!usages) return null
+      return usages[props.emoteId]?.reduce((acc, [, val]) => acc + val, 0) ?? 0
+    }
+  })
+  const formattedUsage = createMemo(() => usage() !== null ? numberFormatter.format(usage() as number) : null)
+  const allUsages = createAccumulatedValues('usage', props.emoteId, usage)
   const usageClass = createMemo(() => {
-    if (Object.values(overallUsage()).length === 0) return emoteBadgeStyles.noUse
-    const average = mean(Object.values(overallUsage())) as unknown as number
-    const standardDeviation = std(Object.values(overallUsage())) as unknown as number
+    const usageValue = usage()
+    if (!allUsages() || allUsages().length === 0 || !usageValue) return emoteBadgeStyles.noUse
+    // from experience an exponential distribution, so standard deviation = mean
+    const average = allUsages().reduce((acc, n) => acc as number + (n ?? 0), 0) as number / allUsages().length
+    const standardDeviation = average
 
-    if (overallUsage()[props.emoteId] === 0)
-      return emoteBadgeStyles.noUse
-    else if (overallUsage()[props.emoteId] <= average - standardDeviation)
+    if (usageValue <= average - (standardDeviation / 2))
       return emoteBadgeStyles.lowUse
-    else if (overallUsage()[props.emoteId] >= average + standardDeviation && overallUsage()[props.emoteId] > 10)
+    else if (usageValue >= average + standardDeviation && usageValue > 10)
       return emoteBadgeStyles.highUse
     else
       return emoteBadgeStyles.avgUse
   })
-  const usageWords = {
-    [emoteBadgeStyles.noUse]: 'No',
-    [emoteBadgeStyles.lowUse]: 'Low',
-    [emoteBadgeStyles.avgUse]: 'Average',
-    [emoteBadgeStyles.highUse]: 'High',
-  }
+
+  const notesBatched = createMemo(() => {
+    if (!showBadges()) return null
+    const idsBatchedValue = idsBatched()
+    if (idsBatchedValue !== null) {
+      return createEmoteNotesResource(props.provider, idsBatched as Accessor<string[]>, channelId)
+    } else return null
+  })
+  const note = createMemo(() => {
+    const resource = notesBatched() as Resource<Record<string, {
+      note: string
+      doNotRemove: boolean
+    }>>
+    if (!resource || resource.loading) return null
+    else {
+      const notes = resource()
+      if (!notes) return null
+      return notes[props.emoteId]
+    }
+  })
+
   return <>
-    <Show when={typeof overallUsage()[props.emoteId] === 'number'}>
-      <div class={cn(emoteBadgeStyles.usage, usageClass())}>
-        {overallUsage()[props.emoteId]}
+    <div ref={visCatcher} class={emoteBadgeStyles.visCatcher} />
+    <div class={cn(emoteBadgeStyles.usage, usage() !== null ? usageClass() : emoteBadgeStyles.loading, emoteBadgeStyles[props.provider.toLowerCase()])}>
+      <Show when={usage() !== null}>
+        {formattedUsage()}
         <div class={emoteBadgeStyles.tooltip}>{usageWords[usageClass()]} usage in the past 30 days</div>
-      </div>
-    </Show>
-    <Show when={emoteNotes()?.[props.emoteId]?.doNotRemove}>
-      <div class={emoteBadgeStyles.dnr}>
+      </Show>
+    </div>
+    <Show when={note()?.doNotRemove}>
+      <div class={cn(emoteBadgeStyles.dnr, emoteBadgeStyles[props.provider.toLowerCase()])}>
         <DNRIcon />
         <div class={emoteBadgeStyles.tooltip}>"Do Not Remove" marker set</div>
       </div>

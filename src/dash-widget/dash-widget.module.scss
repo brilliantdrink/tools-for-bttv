@@ -1,3 +1,6 @@
+@use 'sass:map';
+@use '../variables' as v;
+
 :global(.chakra-tabs:has([role='tablist'])) {
   flex-direction: column;
   gap: 1rem;
@@ -22,12 +25,12 @@
 
 .bttv {
   --border-radius: .5rem;
-  --panel-background: var(--chakra-colors-whiteAlpha-50);
-  --panel-title-color: var(--chakra-colors-whiteAlpha-600);
-  --panel-inner-border-color: var(--chakra-colors-whiteAlpha-300);
+  --panel-background: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 50)};
+  --panel-title-color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 600)};
+  --panel-inner-border-color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 300)};
   --panel-inner-border-width: 2px;
   --panel-inner-border-padding: 3px;
-  --card-background: var(--chakra-colors-whiteAlpha-100);
+  --card-background: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 100)};
   --card-font-size: .9em;
 }
 
@@ -44,7 +47,7 @@
 .title {
   font-size: .7em;
   text-transform: uppercase;
-  color: var(--panel-title-color, var(--chakra-colors-whiteAlpha-600));
+  color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 600)};
 }
 
 .emotesPairContainer {
@@ -52,10 +55,6 @@
   display: flex;
   flex-direction: column;
   gap: .5rem;
-}
-
-.panelContent {
-  flex-grow: 1;
 }
 
 .col {
@@ -73,16 +72,12 @@
 }
 
 .textarea {
-  --input-font-size: var(--chakra-fontSizes-md);
-  --input-padding: var(--chakra-space-4);
-  --input-border-radius: var(--chakra-radii-md);
-  --input-height: var(--chakra-sizes-10);
+  --input-font-size: 1em;
+  --input-border-radius: 6px;
+  --input-height: 2.5em;
 
   font-size: var(--input-font-size);
-  padding-inline-start: var(--input-padding);
-  padding-inline-end: var(--input-padding);
-  padding-top: var(--chakra-space-2);
-  padding-bottom: var(--chakra-space-2);
+  padding: .5em .7em;
   border-radius: var(--input-border-radius);
 
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -91,12 +86,11 @@
   outline-offset: 2px;
   resize: none;
 
-  transition-property: var(--chakra-transition-property-common);
-  transition-duration: var(--chakra-transition-duration-normal);
+  transition-property: border-color;
+  transition-duration: .2s;
 
   &:focus-visible {
     border-color: rgb(99, 179, 237);
-    box-shadow: rgb(99, 179, 237) 0 0 0 1px;
   }
 }
 
@@ -123,19 +117,18 @@
   .control {
     grid-row: span 2;
     user-select: none;
-    --checkbox-size: var(--chakra-sizes-4);
+    --checkbox-size: 16px;
     width: var(--checkbox-size);
     height: var(--checkbox-size);
     transition: box-shadow var(--chakra-transition-duration-normal) linear;
-    border: 2px solid;
-    border-color: inherit;
-    border-radius: var(--chakra-radii-sm);
-    color: var(--chakra-colors-white);
+    border: 2px solid map.get(map.get(v.$chakra2-colors, whiteAlpha), 300);
+    border-radius: var(--chakra-radii-sm, 2px);
+    color: map.get(v.$chakra2-colors, white);
 
     &.checked {
-      background: var(--chakra-colors-blue-200);
-      border-color: var(--chakra-colors-blue-200);
-      color: var(--chakra-colors-gray-900);
+      background: map.get(map.get(v.$chakra2-colors, blue), 200);
+      border-color: map.get(map.get(v.$chakra2-colors, blue), 200);
+      color: map.get(map.get(v.$chakra2-colors, gray), 900);
     }
 
     svg {
@@ -162,11 +155,11 @@
 
   .label {
     user-select: none;
-    font-size: var(--chakra-fontSizes-md);
+    font-size: 1em;
   }
 
   .hint {
     font-size: .7em;
-    color: var(--panel-title-color);
+    color: map.get(map.get(v.$chakra2-colors, whiteAlpha), 600);
   }
 }

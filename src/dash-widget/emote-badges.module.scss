@@ -1,35 +1,84 @@
-.usage {
-  $margin: .3rem;
-  position: absolute;
-  right: $margin;
-  bottom: $margin;
+@use 'sass:color';
+@use 'sass:map';
+@use '../variables' as v;
 
-  font-size: .9rem;
-  color: transparentize(white, .2);
+.visCatcher {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+:global(#emote-form .emote-name) {
+  position: relative;
+}
+
+.usage {
+  &.bttv {
+    position: absolute;
+    $margin: .3rem;
+    right: $margin;
+    bottom: $margin;
+  }
+
+  &.ffz {
+    position: relative;
+    float: right;
+    margin-right: 4px;
+  }
+
+  font-size: 14px;
+  color: color.adjust(white, $alpha: -.2);
   $size: 1.6em;
   height: $size;
   min-width: $size;
   line-height: 1;
   text-align: center;
 
-  border-radius: var(--chakra-radii-md);
+  border-radius: var(--chakra-radii-md, 6px);
   $border-width: 2px;
   border: $border-width solid transparent;
   background-size: calc(100% + $border-width * 2) calc(100% + $border-width * 2);
   background-position: -#{$border-width} -#{$border-width};
 
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
 
+  &.loading {
+    width: $size;
+    animation: pulse 1s infinite alternate both ease-in-out;
+
+    @for $i from 1 through 10 {
+      a:nth-child(#{$i}n) & {
+        animation-delay: #{($i * .1) - 1}s;
+      }
+    }
+
+    @keyframes pulse {
+      from {
+        background-color: color.adjust(white, $alpha: -.8)
+      }
+      to {
+        background-color: color.adjust(white, $alpha: -.9)
+      }
+    }
+  }
+
   &.noUse {
     background: transparent;
-    border-color: transparentize(white, 0.9);
-    color: transparentize(white, .5);
+    border-color: color.adjust(white, $alpha: -.9);
+    color: color.adjust(white, $alpha: -.5);
   }
 
   @function chakra-gradient($color) {
-    @return linear-gradient(to bottom right, var(--chakra-colors-#{$color}-500), var(--chakra-colors-#{$color}-800))
+    @return linear-gradient(
+            to bottom right,
+            map.get(map.get(v.$chakra2-colors, $color), 500),
+            map.get(map.get(v.$chakra2-colors, $color), 800)
+    )
   }
 
   &.lowUse {
@@ -61,15 +110,15 @@
   position: absolute;
   padding: .1rem .5rem;
 
-  background: transparentize(white, .2);
+  background: color.adjust(white, $alpha: -.2);
   backdrop-filter: blur(5px);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   font-weight: 600;
-  font-size: .9rem;
+  font-size: 1em;
   color: black;
   line-height: 1.4;
   text-wrap: nowrap;
-  border-radius: var(--chakra-radii-md);
+  border-radius: var(--chakra-radii-md, 6px);
   opacity: 0;
   transition: opacity .2s;
   pointer-events: none;
@@ -78,15 +127,26 @@
 }
 
 .dnr {
-  $margin: .5rem;
-  position: absolute;
-  right: $margin;
-  top: $margin;
+  &.bttv {
+    position: absolute;
+    $margin: .5rem;
+    right: $margin;
+    bottom: $margin;
+  }
+
+  &.ffz {
+    position: relative;
+    float: right;
+    margin: .1em 8px;
+  }
+
+  display: inline-block;
+
   $size: 1.2em;
   height: $size;
   width: $size;
 
-  color: transparentize(white, .5);
+  color: color.adjust(white, $alpha: -.5);
 
   .tooltip {
     top: -.4rem;

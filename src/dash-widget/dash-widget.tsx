@@ -2,7 +2,7 @@ import {For} from 'solid-js'
 import cn from 'classnames'
 import {extName} from '../variables'
 import {EmoteProvider, useEmotes} from '../util/emote-context'
-import {useChannel} from '../util/channel'
+import {createChannelState} from '../util/channel'
 import {EmoteListDetails} from './emote-list'
 import {EmoteCard} from '../emote-card'
 import {createEditorsSync} from '../util/editors-sync'
@@ -11,7 +11,7 @@ import widgetStyles from './dash-widget.module.scss'
 import emoteCardStyles from '../emote-card.module.scss'
 
 export function DashWidget(props: { provider: EmoteProvider }) {
-  const {channelId} = useChannel(props.provider)
+  const {channelId} = createChannelState(props.provider)
   const {overlapping, likelyDuplicates} = useEmotes(channelId)
   if (props.provider === EmoteProvider.BTTV) createEditorsSync(channelId)
 

@@ -1,14 +1,20 @@
-import {createEffect, createResource, createSignal, Show} from 'solid-js'
+import {Accessor, createResource, createSignal, onMount, Show} from 'solid-js'
 import cn from 'classnames'
-import {useChannel} from './util/channel'
+import {createChannelState} from './util/channel'
 import {EmoteProvider} from './util/emote-context'
 import {useUser} from './util/user'
 
 import loginPromptStyles from './login-prompt.module.scss'
 import emoteBadgesStyles from './dash-widget/emote-badges.module.scss'
 
-export default function LoginPrompt(props: { provider: EmoteProvider, refetch: () => void }) {
-  const {channelDisplayName, channelId} = useChannel(props.provider)
+type LoginPromptPropsBase = { provider: EmoteProvider, refetch: () => void }
+type LoginPromptPropsChannel = { channelDisplayName: Accessor<string>, channelId: Accessor<string> }
+type LoginPromptProps = LoginPromptPropsBase | (LoginPromptPropsBase & LoginPromptPropsChannel)
+
+export default function LoginPrompt(props: LoginPromptProps) {
+  const channelState = createChannelState(props.provider)
+  const channelDisplayName = 'channelDisplayName' in props ? props.channelDisplayName : channelState.channelDisplayName
+  const channelId = 'channelId' in props ? props.channelId : channelState.channelId
   const {userId} = useUser(props.provider)
 
   const [loginButtonClicked, setLoginButtonClicked] = createSignal(false)
@@ -18,7 +24,7 @@ export default function LoginPrompt(props: { provider: EmoteProvider, refetch: (
     return fetch(`https://${API_HOST}/twitch/client-id`).then(res => res.json())
   })
 
-  createEffect(() => {
+  onMount(() => {
     const location = new URL(window.location.toString())
     if (!location.searchParams.get('state')) {
       return setIsLoginAttempt(false)
@@ -62,7 +68,7 @@ export default function LoginPrompt(props: { provider: EmoteProvider, refetch: (
     <div class={loginPromptStyles.wrapper}>
       <Show when={isLoginAttempt() === false}>
         <div class={loginPromptStyles.notice}>
-          This feature only works if {userId() !== channelId() ? `both ${channelDisplayName()} and ` : ' '}you are
+          This feature only works if {String(userId()) !== String(channelId()) ? `both ${channelDisplayName()} and ` : ' '}you are
           logged into <em>Tools for BTTV</em>.
           <div class={loginPromptStyles.info}>
             <InfoIcon class={loginPromptStyles.icon} />
@@ -101,8 +107,8 @@ function InfoIcon(props: { class: string }) {
   )
 }
 
-export function ForbiddenError(props: { provider: EmoteProvider }) {
-  const {channelDisplayName} = useChannel(props.provider)
+export function ForbiddenError(props: { provider: EmoteProvider, channelDisplayName?: Accessor<string> }) {
+  const channelDisplayName = props.channelDisplayName ?? createChannelState(props.provider).channelDisplayName
 
   return (
     <div class={loginPromptStyles.wrapper}>

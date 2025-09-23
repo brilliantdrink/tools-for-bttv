@@ -11,7 +11,7 @@ export default function DuplicatesList(props: {
   provider: EmoteProvider,
   emoteName: string,
   emoteId: string,
-  sectionClass: string
+  sectionClass?: string
 }) {
   const {emotes} = useEmotes(props.channelId)
 
@@ -27,7 +27,6 @@ export default function DuplicatesList(props: {
   return <>
     <div class={cn(
       widgetStyles.col,
-      props.provider === EmoteProvider.FFZ && widgetStyles.ffzCol,
       props.provider === EmoteProvider.FFZ && dashWidgetStyles.ffz,
       'chakra-stack',
       props.sectionClass

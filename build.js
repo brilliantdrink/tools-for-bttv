@@ -11,10 +11,16 @@ const packageJson = (await import('./package.json', {with: {type: 'json'}})).def
 
 const config = {
   entryPoints: ['src/index.tsx'],
+  metafile: true,
   bundle: true,
+  loader: {
+    '.woff': 'base64',
+    '.woff2': 'base64',
+  },
   define: {
     'VERSION': JSON.stringify(packageJson.version),
-    'ENV': process.env.NODE_ENV === 'watch' ? '"development"' : '"production"',
+    'ENV': JSON.stringify(process.env.NODE_ENV === 'watch' ? 'development' : 'production'),
+    'DIST': JSON.stringify(process.env.DIST ?? 'extension'),
     ...Object.fromEntries(Object.entries(env.parsed).map(([key, value]) => {
       if (process.env.NODE_ENV === 'watch') {
         if (key.startsWith('PRD_')) return null
@@ -32,7 +38,7 @@ const config = {
   plugins: [{
     name: 'lodash-csp',
     setup(build) {
-      build.onLoad({ filter: /lodash/ }, async (args) => {
+      build.onLoad({filter: /lodash/}, async (args) => {
         let text = fs.readFileSync(args.path, 'utf8')
         text = text.replace(/Function\('return this'\)\(\)/, 'window')
         return {
@@ -44,7 +50,7 @@ const config = {
   }, {
     name: 'remove-node-require',
     setup(build) {
-      build.onLoad({ filter: /\.[jt]s$/ }, async (args) => {
+      build.onLoad({filter: /\.[jt]s$/}, async (args) => {
         let text = fs.readFileSync(args.path, 'utf8')
         text = text.replace(/import [^ ]+ from ['"](node:)?(fs)['"];?/, '')
         text = text.replace(/(const|let|var) [^ ]+ ?= ?require\(['"](node:)?(fs)['"]\);?/, '')
@@ -65,5 +71,7 @@ const config = {
 
 if (process.env.NODE_ENV === 'watch')
   await (await esbuild.context(config)).watch({})
-else
-  await esbuild.build(config)
+else {
+  const result = await esbuild.build(config)
+  fs.writeFileSync('tools-for-bttv.meta.json', JSON.stringify(result.metafile))
+}
