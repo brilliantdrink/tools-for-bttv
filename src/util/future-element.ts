@@ -15,11 +15,15 @@ export function queryFutureElement<E extends Element = Element>(selector: string
       }
     });
 
-    observer.observe(document.body, {childList: true, subtree: true});
-  });
+    const interval = setInterval(() => {
+      if (!document.body) return
+      clearInterval(interval)
+      observer.observe(document.body, {childList: true, subtree: true})
+    })
+  })
 }
 
-export async function* queryFutureElements(selector: string, options?: {timeout?: number, abort?: AbortSignal}) {
+export async function* queryFutureElements(selector: string, options?: { timeout?: number, abort?: AbortSignal }) {
   const yielded: Element[] = []
   let lastYield = performance.now()
   let abort = false

@@ -2,26 +2,6 @@ import {EmoteData} from './emote-context'
 import {bttvFormatEmoteToToolsEmote, ffzFormatEmoteToToolsEmote} from '../variables'
 import {BTTVEmote} from './bttv-emotes'
 
-export interface FFZChannelData {
-  user: {
-    id: number,
-    twitch_id: number,
-    youtube_id: string | null,
-    name: string,
-    display_name: string | null,
-    avatar: string | null,
-    max_emoticons: number,
-    is_donor: boolean,
-    is_subwoofer: boolean,
-    sub_months: number,
-    sub_lifetime: boolean,
-    badges: number[],
-    emote_sets: number[]
-  },
-  badges: {},
-  sets: {}
-}
-
 export interface FFZUserData {
   _id: number,
   name: string,
@@ -65,23 +45,15 @@ export interface FFZSetData {
   }
 }
 
-const channelCache: Record<string, FFZChannelData> = {}
-
-export async function FFZgetChannelId(channel: string) {
-  if (channel in channelCache) return channelCache[channel].user.twitch_id
-  channelCache[channel] = await fetch(`https://api.frankerfacez.com/v1/user/${channel.toLowerCase()}`).then(res => res.json()) as FFZChannelData
-  return channelCache[channel].user.twitch_id
-}
-
-export async function FFZgetChannelDisplayName(channel: string) {
-  if (channel in channelCache) return channelCache[channel].user.display_name
-  const ffzChannelData = await fetch(`https://api.frankerfacez.com/v1/user/${channel.toLowerCase()}`).then(res => res.json()) as FFZChannelData
-  return ffzChannelData.user.display_name
-}
-
 export async function getFFZEmotes(twitchId: string): Promise<Omit<EmoteData, 'provider'>[]> {
   const ffzUserData = await fetch(`https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${twitchId}`).then(res => res.json()) as BTTVEmote[]
   return ffzUserData.map(bttvFormatEmoteToToolsEmote)
+}
+
+export async function getFFZEmote(ffzId: string): Promise<Omit<EmoteData, 'provider'>> {
+  const ffzUserData = await fetch(`https://api.frankerfacez.com/v1/emote/${ffzId}`)
+    .then(res => res.json()) as {emote: FFZEmoteData}
+  return ffzFormatEmoteToToolsEmote(ffzUserData.emote)
 }
 
 export async function getFFZGlobalEmotes(): Promise<Omit<EmoteData, 'provider'>[]> {

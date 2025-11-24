@@ -4,6 +4,7 @@ import * as esbuild from 'esbuild'
 import stylePlugin from 'esbuild-style-plugin'
 import {solidPlugin} from 'esbuild-plugin-solid'
 import dotenv from '@dotenvx/dotenvx'
+import autoprefixer from 'autoprefixer'
 
 const env = dotenv.config()
 
@@ -60,7 +61,14 @@ const config = {
         }
       })
     },
-  }, solidPlugin(), stylePlugin({
+  }, solidPlugin({
+    typescript: {
+      allowDeclareFields: true,
+    }
+  }), stylePlugin({
+    postcss: {
+      plugins: [autoprefixer]
+    },
     cssModulesOptions: {
       generateScopedName: function (name, filename) {
         return 'tfb-' + name + '_' + path.basename(filename).replace(/.module.(sa|s?c)ss/, '');

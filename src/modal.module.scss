@@ -1,0 +1,101 @@
+@use 'variables' as v;
+@use 'sass:meta';
+@use 'sass:string';
+@use 'sass:map';
+
+@mixin openClose($open, $closed) {
+  $id: string.unique-id();
+
+  @keyframes open-#{$id} {
+    from {
+      @include meta.apply($closed);
+    }
+    to {
+      @include meta.apply($open);
+    }
+  }
+
+  @keyframes close-#{$id} {
+    from {
+      @include meta.apply($open);
+    }
+    to {
+      @include meta.apply($closed);
+    }
+  }
+
+  &.open {
+    animation: open-#{$id} .3s ease both;
+  }
+
+  &.closed {
+    animation: close-#{$id} .3s ease both;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1100;
+
+  @mixin open {
+    opacity: 1;
+    backdrop-filter: blur(1px);
+  }
+
+  @mixin closed {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+
+  @include openClose(meta.get-mixin(open), meta.get-mixin(closed));
+
+  .modal {
+    width: 24 * 16px;
+    min-height: 8 * 16px;
+    max-height: 34 * 16px;
+    --modal-background: #{v.color(gray, 900)};
+    background: var(--modal-background);
+    border: 1px solid v.color(gray, 800);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: var(--chakra-radii-md, 6px);
+
+    $padding: 16px;
+    padding: $padding;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &.ffz {
+      --modal-background: #2a2a2a;
+      border-color: #444;
+    }
+
+    @mixin open {
+      transform: translateY(0px);
+    }
+
+    @mixin closed {
+      transform: translateY(1rem);
+    }
+
+    @include openClose(meta.get-mixin(open), meta.get-mixin(closed));
+
+    .close {
+      position: absolute;
+      top: $padding;
+      right: $padding;
+      cursor: pointer;
+    }
+  }
+}

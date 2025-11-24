@@ -76,8 +76,8 @@
   @function chakra-gradient($color) {
     @return linear-gradient(
             to bottom right,
-            map.get(map.get(v.$chakra2-colors, $color), 500),
-            map.get(map.get(v.$chakra2-colors, $color), 800)
+            v.color($color, 500),
+            v.color($color, 800)
     )
   }
 
@@ -98,32 +98,6 @@
     left: 50%;
     transform: translateX(-50%) translateY(100%);
   }
-
-  &:hover {
-    .tooltip {
-      opacity: 1;
-    }
-  }
-}
-
-.tooltip {
-  position: absolute;
-  padding: .1rem .5rem;
-
-  background: color.adjust(white, $alpha: -.2);
-  backdrop-filter: blur(5px);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-  font-weight: 600;
-  font-size: 1em;
-  color: black;
-  line-height: 1.4;
-  text-wrap: nowrap;
-  border-radius: var(--chakra-radii-md, 6px);
-  opacity: 0;
-  transition: opacity .2s;
-  pointer-events: none;
-
-  z-index: 2;
 }
 
 .dnr {
@@ -131,7 +105,7 @@
     position: absolute;
     $margin: .5rem;
     right: $margin;
-    bottom: $margin;
+    top: $margin;
   }
 
   &.ffz {
@@ -149,14 +123,9 @@
   color: color.adjust(white, $alpha: -.5);
 
   .tooltip {
+    font-size: 14px;
     top: -.4rem;
     left: 50%;
     transform: translateX(-50%) translateY(-100%);
-  }
-
-  &:hover {
-    .tooltip {
-      opacity: 1;
-    }
   }
 }

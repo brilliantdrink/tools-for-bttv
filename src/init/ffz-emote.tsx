@@ -2,6 +2,7 @@ import {render} from 'solid-js/web'
 import {EmoteProvider} from '../util/emote-context'
 import {DuplicatesPanel} from '../panel/duplicates-panel'
 import {EmoteWidget} from '../emote-widget/emote-widget'
+import {CurrentChannelProvider} from '../util/track-current-channel'
 
 export default async function initFfzEmote() {
   const ffzEmoteSidebar = document.querySelector('#sidebar') as HTMLDivElement
@@ -35,7 +36,11 @@ export default async function initFfzEmote() {
     ffzEmoteSidebar
   )
   const detachEmoteWidget = render(
-    () => <EmoteWidget provider={EmoteProvider.FFZ} data={ffzAppData} />,
+    () => (
+      <CurrentChannelProvider provider={EmoteProvider.FFZ}>
+        <EmoteWidget provider={EmoteProvider.FFZ} data={ffzAppData} />
+      </CurrentChannelProvider>
+    ),
     widgetContainer
   )
 

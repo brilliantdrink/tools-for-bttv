@@ -1,8 +1,44 @@
 .details {
-}
+  small {
+    line-height: 1.2;
+  }
 
-.heading {
-  display: revert;
-  margin-top: .5rem;
-  font-weight: bold;
+  .heading {
+    position: relative;
+    display: revert;
+    margin: .5rem 0;
+    font-weight: 400;
+    font-size: 14px;
+    //list-style: none;
+    list-style-position: inside;
+
+    cursor: pointer;
+
+    &::marker {
+      content: '    ';
+      color: transparent;
+    }
+
+    .marker {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 12px;
+
+      transition: transform .1s ease;
+
+      path {
+        stroke-width: 2;
+      }
+    }
+  }
+
+  &:not([open]) .heading {
+    margin-bottom: 0;
+  }
+
+  &[open] .heading .marker {
+    transform: rotate(90deg);
+  }
 }

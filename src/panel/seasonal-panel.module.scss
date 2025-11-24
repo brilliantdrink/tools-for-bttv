@@ -1,0 +1,243 @@
+@use '../variables' as v;
+@use 'sass:map';
+
+.section {
+  flex-direction: column;
+  gap: .7rem;
+
+  &:not(.heading):not(.nonScroll) {
+    overflow-y: auto;
+  }
+
+  > .button {
+    padding-top: .3rem;
+    padding-bottom: .3rem;
+  }
+}
+
+.groupList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  .groupItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    //grid-template-columns: repeat(2, 1fr);
+    //grid-template-areas: 'name name' 'as-alt add-alt';
+    //grid-gap: .3rem .5rem;
+
+    //margin-top: .7rem;
+    padding: .5rem 0;
+    //background: v.color(whiteAlpha, 50);
+    //border-radius: var(--chakra-radii-md, 6px);
+    //border-bottom: 1px solid v.color(whiteAlpha, 200);
+
+    &:first-child {
+      padding-top: .3rem;
+    }
+
+    .separator {
+      width: 1px;
+      background: v.color(whiteAlpha, 200);
+      align-self: stretch;
+    }
+
+    .name {
+      //grid-area: name;
+      font-weight: 600;
+      flex-grow: 1;
+      line-height: 1.2;
+
+      small {
+        display: block;
+        font-size: 10px;
+        font-weight: 500;
+        opacity: .7;
+      }
+    }
+
+    .button {
+      position: relative;
+      height: 24px;
+      width: 24px;
+      //padding: .5rem .2rem .5rem;
+      padding: 0 .3rem;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -.05ch;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      svg {
+        $size: 1.2em;
+        width: $size;
+        height: $size;
+
+        &.upsize {
+          $factor: 1.15;
+          width: $size * $factor;
+          height: $size * $factor;
+        }
+      }
+
+      .tooltip {
+        bottom: -.4em;
+        right: -.2em;
+        transform: translateY(100%);
+      }
+    }
+
+    /*.asAlt {
+      grid-area: as-alt;
+    }*/
+
+    /*.addAlt {
+      grid-area: add-alt;
+    }*/
+  }
+}
+
+.button {
+  width: 100%;
+  height: 32px;
+  appearance: none;
+  border-radius: var(--chakra-radii-md, 6px);
+  background: v.color(whiteAlpha, 200);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 16px;
+
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  transition: background .2s;
+
+  &:hover {
+    background: v.color(whiteAlpha, 200);
+  }
+
+  &.primary {
+    background: v.color(blue, 200);
+    color: v.color(gray, 800);
+
+    &:hover {
+      background: v.color(blue, 300);
+    }
+  }
+
+  &.destructive {
+    background: v.color(red, 300);
+    color: v.color(gray, 800);
+
+    &:hover {
+      background: v.color(red, 400);
+    }
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  span {
+    font-size: 12px;
+  }
+}
+
+.input {
+  appearance: none;
+  height: 32px;
+  color: v.color(whiteAlpha, 900);
+  border-radius: var(--chakra-radii-md, 6px);
+  border: 1px solid v.color(whiteAlpha, 300);
+  background: none;
+  padding: 0 8px;
+}
+
+.modal {
+  --card-font-size: .9em;
+
+  &.fixedHeight > div {
+    height: 34 * 16px;
+  }
+
+  p:not(.heading) {
+    font-size: 14px;
+  }
+
+  .heading {
+    font-weight: 600;
+  }
+
+  small {
+    font-size: 11px;
+    opacity: .7;
+  }
+
+  .warn {
+    color: v.color(orange, 500);
+  }
+
+  .emoteList, .emoteDisplay {
+    display: grid;
+    gap: 8px;
+
+    > * {
+      border-radius: var(--chakra-radii-md, 6px);
+      background: v.color(blackAlpha, 300);
+    }
+  }
+
+  .emoteList {
+    $extra-pad: 12px;
+    width: calc(100% + $extra-pad * 2);
+    flex-grow: 1;
+    position: relative;
+    top: -$extra-pad;
+    left: -$extra-pad;
+    padding: $extra-pad;
+    margin-top: 6px;
+
+    grid-template-columns: repeat(3, minmax(100px, 1fr));
+    grid-auto-rows: 82px;
+
+    overflow-y: auto;
+  }
+
+  .emoteDisplay {
+    grid-template-columns: repeat(2, 1fr);
+    justify-items: center;
+
+    > * {
+      width: 100%;
+      max-width: initial;
+    }
+  }
+
+  .emoteReplacementList {
+    overflow-y: auto;
+  }
+
+  .button {
+    width: auto;
+    align-self: end;
+
+    margin-top: 12px;
+  }
+}

@@ -4,12 +4,17 @@ import {queryFutureElement, queryFutureElements} from '../util/future-element'
 import {EmoteProvider} from '../util/emote-context'
 import EmoteBadges from '../dash-widget/emote-badges'
 import {DashWidget} from '../dash-widget/dash-widget'
+import {CurrentChannelProvider} from '../util/track-current-channel'
 
 const emoteIdFromLinkRegex = /emotes\/([^/]+)/
 
 export default async function initBttvDash(attachDelay: number) {
   const detachWidget = render(
-    () => <DashWidget provider={EmoteProvider.BTTV} />,
+    () => (
+      <CurrentChannelProvider provider={EmoteProvider.BTTV}>
+        <DashWidget provider={EmoteProvider.BTTV} />
+      </CurrentChannelProvider>
+    ),
     await queryFutureElement('.chakra-tabs:has([role="tablist"])') as HTMLDivElement
   )
   let detachEmotes: (() => void)[] = []
@@ -30,7 +35,11 @@ export default async function initBttvDash(attachDelay: number) {
       detachEmotes.push(
         render(() => {
           const emoteId = element.href.match(emoteIdFromLinkRegex)?.[1] ?? ''
-          return <EmoteBadges emoteId={emoteId} provider={EmoteProvider.BTTV} />
+          return (
+            <CurrentChannelProvider provider={EmoteProvider.BTTV}>
+              <EmoteBadges emoteId={emoteId} provider={EmoteProvider.BTTV} />
+            </CurrentChannelProvider>
+          )
         }, element)
       )
     }

@@ -1,0 +1,76 @@
+@use 'variables' as v;
+@use 'sass:map';
+
+.checkbox {
+  position: relative;
+  display: grid;
+  grid: {
+    template: {
+      columns: auto 1fr;
+      rows: auto auto;
+    }
+    //noinspection CssInvalidPropertyValue
+    gap: 0 .5rem;
+  }
+  align-items: center;
+  cursor: pointer;
+
+  &:not(:has(:nth-child(2))) {
+    grid-template-columns: auto;
+  }
+
+  input[type=checkbox] {
+    visibility: hidden;
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .control {
+    grid-row: span 2;
+    user-select: none;
+    --checkbox-size: 16px;
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+    transition: box-shadow var(--chakra-transition-duration-normal) linear;
+    border: 2px solid v.color(whiteAlpha, 300);
+    border-radius: var(--chakra-radii-sm, 2px);
+    color: map.get(v.$chakra2-colors, white);
+
+    &.checked {
+      background: v.color(blue, 200);
+      border-color: v.color(blue, 200);
+      color: v.color(gray, 900);
+    }
+
+    svg {
+      animation: 200ms linear animation-y8j1dl both;
+      transition: transform var(--chakra-transition-duration-normal) linear;
+      font-size: var(--chakra-fontSizes-2xs);
+      width: 1.2em;
+    }
+
+    @keyframes animation-y8j1dl {
+      from {
+        opacity: 0;
+        stroke-dashoffset: 100%;
+        transform: scale(1);
+      }
+
+      to {
+        opacity: 1;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+      }
+    }
+  }
+
+  .label {
+    user-select: none;
+    font-size: 1em;
+  }
+
+  .hint {
+    font-size: .7em;
+    color: v.color(whiteAlpha, 600);
+  }
+}

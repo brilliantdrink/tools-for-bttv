@@ -1,4 +1,4 @@
-import {Accessor, createEffect, from} from 'solid-js'
+import {Accessor, createEffect, from, onMount} from 'solid-js'
 
 export default class Dispatcher {
   listeners: Record<string, ((value: any) => void)[]>
@@ -39,13 +39,9 @@ export default class Dispatcher {
 const dispatcher = new Dispatcher()
 
 export function createGlobalSignal<T>(id: string, defaultValue: T): [Accessor<T | undefined>, (value: T) => void] {
+  dispatcher.defaultValue(id, defaultValue)
   const value = from<T>(set => {
     return dispatcher.onChange(id, set)
   })
-
-  createEffect(() => {
-    dispatcher.defaultValue(id, defaultValue)
-  })
-
   return [value, (value: T) => dispatcher.change(id, value)]
 }

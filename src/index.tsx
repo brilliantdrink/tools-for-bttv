@@ -1,3 +1,4 @@
+import './hook-fetch'
 import {
   AttachmentPoints,
   bttvDashPath,
@@ -11,6 +12,7 @@ import initBttvDash from './init/bttv-dash'
 import initBttvEmote from './init/bttv-emote'
 import initFfzDash from './init/ffz-dash'
 import initFfzEmote from './init/ffz-emote'
+import {bttvDashPerfTweaks} from './bttv-dash-perf-tweaks'
 
 import './variables.scss'
 
@@ -19,7 +21,7 @@ if (DIST == 'userscript') {
   styles.rel = 'stylesheet'
   const styleLink = (fallback = false) => {
     if (ENV !== 'development') return 'https://cdn.jsdelivr.net/gh/brilliantdrink/tools-for-bttv/tools-for-bttv.css'
-    const url = new URL(!fallback ? 'https://127.0.0.1:8080' : 'https://localhost:8080')
+    const url = new URL(!fallback ? 'https://127.0.0.1:8081' : 'https://localhost:8081')
     url.pathname = '/tools-for-bttv.css'
     return url.toString()
   }
@@ -57,20 +59,23 @@ let detach: () => void = () => 0
 
 const ATTACH_DELAY = 700
 
-observeLocation(async (attachmentPoint) => {
-  detach()
-  switch (attachmentPoint) {
-    case AttachmentPoints.BttvDash:
-      detach = await initBttvDash(ATTACH_DELAY)
-      break
-    case AttachmentPoints.BttvEmote:
-      detach = await initBttvEmote() ?? detach
-      break
-    case AttachmentPoints.FfzDash:
-      detach = await initFfzDash()
-      break
-    case AttachmentPoints.FfzEmote:
-      detach = await initFfzEmote() ?? detach
-      break
-  }
+window.addEventListener('load', () => {
+  observeLocation(async (attachmentPoint) => {
+    detach()
+    switch (attachmentPoint) {
+      case AttachmentPoints.BttvDash:
+        detach = await initBttvDash(ATTACH_DELAY)
+        await bttvDashPerfTweaks()
+        break
+      case AttachmentPoints.BttvEmote:
+        detach = await initBttvEmote().catch(console.error) ?? detach
+        break
+      case AttachmentPoints.FfzDash:
+        detach = await initFfzDash()
+        break
+      case AttachmentPoints.FfzEmote:
+        detach = await initFfzEmote() ?? detach
+        break
+    }
+  })
 })

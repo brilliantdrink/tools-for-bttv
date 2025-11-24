@@ -21,17 +21,35 @@
 
 #bttvFfzHelper.ffz {
   font-size: 14px;
+  $padding: 15px;
+  padding: 0 $padding $padding;
+
+  .title {
+    position: relative;
+    left: -$padding;
+    width: calc(100% + #{$padding} * 2);
+  }
+
+  .addButton {
+    margin-top: 16px;
+  }
 }
 
 .bttv {
   --border-radius: .5rem;
-  --panel-background: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 50)};
-  --panel-title-color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 600)};
-  --panel-inner-border-color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 300)};
+  --panel-background: #{v.color(whiteAlpha, 100)};
+  --panel-title-color: #{v.color(whiteAlpha, 600)};
+  --panel-inner-border-color: #{v.color(whiteAlpha, 300)};
   --panel-inner-border-width: 2px;
   --panel-inner-border-padding: 3px;
-  --card-background: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 100)};
+  --card-background: #{v.color(whiteAlpha, 100)};
   --card-font-size: .9em;
+
+  .title {
+    font-size: .7em;
+    text-transform: uppercase;
+    color: #{v.color(whiteAlpha, 600)};
+  }
 }
 
 .ffz {
@@ -44,122 +62,56 @@
   --card-font-size: 1em;
 }
 
-.title {
-  font-size: .7em;
-  text-transform: uppercase;
-  color: #{map.get(map.get(v.$chakra2-colors, whiteAlpha), 600)};
+.heading {
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.checkbox {
+  margin-top: .3rem;
+  font-size: 14px;
+
+  :nth-child(4) {
+    font-size: .75em !important; // sowwyy
+  }
+}
+
+.small {
+  margin: 8px 0;
+  opacity: .7;
 }
 
 .emotesPairContainer {
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: .5rem;
 }
 
-.col {
-  display: flex;
-  flex-direction: column;
-  gap: .8rem;
+.details {
+  small {
+    display: inline-block; // to apply the line-height
+    opacity: .7;
+  }
 }
 
 .ffzDetails {
-  padding: 0 1.5rem;
-
   &:last-child {
     margin-bottom: 1rem;
   }
 }
 
-.textarea {
-  --input-font-size: 1em;
-  --input-border-radius: 6px;
-  --input-height: 2.5em;
+.seasonalList {
+  font-size: 14px;
 
-  font-size: var(--input-font-size);
-  padding: .5em .7em;
-  border-radius: var(--input-border-radius);
+  li {
+    padding: .5rem 0 0 !important;
 
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: inherit;
-  outline: transparent solid 2px;
-  outline-offset: 2px;
-  resize: none;
-
-  transition-property: border-color;
-  transition-duration: .2s;
-
-  &:focus-visible {
-    border-color: rgb(99, 179, 237);
-  }
-}
-
-.checkbox {
-  position: relative;
-  display: grid;
-  grid: {
-    template: {
-      columns: auto 1fr;
-      rows: auto auto;
-    }
-    //noinspection CssInvalidPropertyValue
-    gap: 0 .5rem;
-  }
-  align-items: center;
-  cursor: pointer;
-
-  input[type=checkbox] {
-    visibility: hidden;
-    position: absolute;
-    pointer-events: none;
-  }
-
-  .control {
-    grid-row: span 2;
-    user-select: none;
-    --checkbox-size: 16px;
-    width: var(--checkbox-size);
-    height: var(--checkbox-size);
-    transition: box-shadow var(--chakra-transition-duration-normal) linear;
-    border: 2px solid map.get(map.get(v.$chakra2-colors, whiteAlpha), 300);
-    border-radius: var(--chakra-radii-sm, 2px);
-    color: map.get(v.$chakra2-colors, white);
-
-    &.checked {
-      background: map.get(map.get(v.$chakra2-colors, blue), 200);
-      border-color: map.get(map.get(v.$chakra2-colors, blue), 200);
-      color: map.get(map.get(v.$chakra2-colors, gray), 900);
-    }
-
-    svg {
-      animation: 200ms linear animation-y8j1dl both;
-      transition: transform var(--chakra-transition-duration-normal) linear;
-      font-size: var(--chakra-fontSizes-2xs);
-      width: 1.2em;
-    }
-
-    @keyframes animation-y8j1dl {
-      from {
-        opacity: 0;
-        stroke-dashoffset: 100%;
-        transform: scale(1);
-      }
-
-      to {
-        opacity: 1;
-        stroke-dashoffset: 0;
-        transform: scale(1);
-      }
+    > span {
+      font-weight: 400 !important;
     }
   }
 
-  .label {
-    user-select: none;
-    font-size: 1em;
-  }
-
-  .hint {
-    font-size: .7em;
-    color: map.get(map.get(v.$chakra2-colors, whiteAlpha), 600);
+  + .addButton {
+    margin-top: .5rem;
   }
 }

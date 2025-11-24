@@ -1,3 +1,6 @@
+@use '../variables' as v;
+@use 'sass:map';
+
 @font-face {
   font-family: 'Sofia Sans Condensed';
   src: url('../fonts/SofiaSansCondensed-Regular.woff2') format('woff2');
@@ -25,7 +28,45 @@
 
   .chartWrapper {
     flex-grow: 1;
-    font-feature-settings: "ss02";
+    font-feature-settings: 'ss02';
     letter-spacing: -.01em;
+    font-size: 12px;
+    line-height: 1.1;
+
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: 1fr 32px;
+    grid-auto-columns: 1fr;
+    align-items: end;
+
+    .bar {
+      padding: 2px 0;
+      box-sizing: border-box;
+      margin: 0 6px;
+
+      $min-height: 18px;
+      --value: 0;
+      --max-value: 1;
+      --height-relative: calc(var(--value) / var(--max-value));
+      height: calc(#{$min-height} + (100% - #{$min-height}) * var(--height-relative));
+
+      color: v.color(gray, 800);
+      background-color: v.color(blue, 300);
+      border-radius: var(--chakra-radii-md, 6px) var(--chakra-radii-md, 6px) 0 0;
+
+      display: flex;
+      align-items: start;
+      justify-content: center;
+
+      .value {
+        letter-spacing: -.03em;
+      }
+    }
+
+    .label {
+      font-family: 'Sofia Sans Condensed', sans-serif;
+      text-align: center;
+      opacity: .7;
+    }
   }
 }

@@ -1,14 +1,17 @@
-import {Accessor, createResource, Show} from 'solid-js'
+import {Accessor, createMemo, createResource, Show, Suspense} from 'solid-js'
 import cn from 'classnames'
 import debounce from 'lodash.debounce'
 import StatusCodes from 'http-status-codes'
 import {EmoteProvider} from '../util/emote-context'
-import {createChannelState} from '../util/channel'
+import {createChannelInfo} from '../util/channel'
 import BttvPanel from '../panel/panel'
 import LoginPrompt, {ForbiddenError, GenericError} from '../login-prompt'
 import {authFetch} from '../util/auth-fetch'
+import {Checkbox} from '../checkbox'
+import {useCurrentChannelContext} from '../util/track-current-channel'
+import {Spinner} from '../spinner'
 
-import dashWidgetStyles from '../dash-widget/dash-widget.module.scss'
+import styles from './notes-panel.module.scss'
 
 interface NotesPanelProps {
   provider: EmoteProvider,
@@ -18,16 +21,12 @@ interface NotesPanelProps {
   emoteId: string
 }
 
-interface ChannelDisplayNameAndId {
-  channelDisplayName: Accessor<string>
-  channelId: Accessor<string>
-}
-
-export function NotesPanel(props: NotesPanelProps | (NotesPanelProps & ChannelDisplayNameAndId)) {
-  const channelState = createChannelState(props.provider)
-  const channelDisplayName = 'channelDisplayName' in props ? props.channelDisplayName : channelState.channelDisplayName
-  const channelId = 'channelId' in props ? props.channelId : channelState.channelId
+export function NotesPanel(props: NotesPanelProps) {
+  const currentChannelContext = useCurrentChannelContext()
+  const {id: channelId, displayName: channelDisplayName} =
+    createChannelInfo(props.provider, currentChannelContext.knownInfo)
   const [emoteNotes, {mutate: mutateEmoteNotes, refetch}] = createResource(channelId, async (channelId) => {
+    if (channelId === null) return {note: '', doNotRemove: false}
     return await authFetch(`https://${API_HOST}/emote/${props.provider.toLowerCase()}/${props.emoteId}/notes/${channelId}`)
       .then(async res => {
         if (res.ok) {
@@ -39,6 +38,11 @@ export function NotesPanel(props: NotesPanelProps | (NotesPanelProps & ChannelDi
         }
       })
       .catch(() => ({error: null}))
+  })
+
+  const dnr = createMemo(() => {
+    const notes = emoteNotes()
+    return !!notes && 'doNotRemove' in notes && notes.doNotRemove
   })
 
   function toggleEmoteNotesDNR() {
@@ -69,44 +73,31 @@ export function NotesPanel(props: NotesPanelProps | (NotesPanelProps & ChannelDi
 
   return (
     <BttvPanel panelClass={props.panelClass}
-               sectionClass={cn(props.sectionClass, dashWidgetStyles.col)}
+               sectionClass={cn(props.sectionClass, styles.col)}
                headingClass={cn(props.headingClass)}
                provider={props.provider} title={'Notes'}>
-      <Show when={emoteNotes.state === 'ready' && !('error' in emoteNotes())}>
-        <label class={dashWidgetStyles.checkbox}>
-          <input type="checkbox" onChange={toggleEmoteNotesDNR}
-                 checked={(emoteNotes() as { doNotRemove: boolean }).doNotRemove} />
-          <span class={cn(dashWidgetStyles.control, (emoteNotes() as {
-            doNotRemove: boolean
-          }).doNotRemove && dashWidgetStyles.checked)}>
-                  <Show when={(emoteNotes() as { doNotRemove: boolean }).doNotRemove}>
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                      <svg viewBox="0 0 12 10"
-                           style="fill: none; stroke-width: 2px; stroke: currentcolor; stroke-dasharray: 16px;">
-                        <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-                      </svg>
-                    </div>
-                  </Show>
-                </span>
-          <span class={dashWidgetStyles.label}>Do not remove</span>
-          <span class={dashWidgetStyles.hint}>Just a marker, does not get enforced</span>
-        </label>
-        <textarea class={dashWidgetStyles.textarea} rows="3" placeholder="Notes for this emote group"
-                  onInput={(event) => setEmoteNotes(event.currentTarget.value)}>
-                {(emoteNotes() as { note: string }).note}
-              </textarea>
-      </Show>
-      <Show when={emoteNotes.state === 'ready' && 'error' in emoteNotes()}>
-        <Show when={(emoteNotes() as { error: any }).error === StatusCodes.UNAUTHORIZED}>
-          <LoginPrompt provider={props.provider} refetch={refetch} channelId={channelId} channelDisplayName={channelDisplayName} />
+      <Suspense fallback={<Spinner centered />}>
+        <Show when={(emoteNotes() as any)?.['error'] === undefined}>
+          <Checkbox checked={dnr} setChecked={toggleEmoteNotesDNR}
+                    label={'Do not remove'} hint={'Just a marker, not enforced'} />
+          <textarea class={styles.textarea} rows="3" placeholder="Notes for this emote"
+                    onInput={(event) => setEmoteNotes(event.currentTarget.value)}>
+          {(emoteNotes() as { note: string })?.note}
+        </textarea>
         </Show>
-        <Show when={(emoteNotes() as { error: any }).error === StatusCodes.FORBIDDEN}>
-          <ForbiddenError provider={props.provider} channelDisplayName={channelDisplayName} />
+        <Show when={(emoteNotes() as any)?.['error'] !== undefined}>
+          <Show when={(emoteNotes() as { error: any }).error === StatusCodes.UNAUTHORIZED}>
+            <LoginPrompt provider={props.provider} refetch={refetch} channelId={channelId}
+                         channelDisplayName={channelDisplayName} />
+          </Show>
+          <Show when={(emoteNotes() as { error: any }).error === StatusCodes.FORBIDDEN}>
+            <ForbiddenError provider={props.provider} channelDisplayName={channelDisplayName} />
+          </Show>
+          <Show when={(emoteNotes() as { error: any }).error === null}>
+            <GenericError />
+          </Show>
         </Show>
-        <Show when={(emoteNotes() as { error: any }).error === null}>
-          <GenericError />
-        </Show>
-      </Show>
+      </Suspense>
     </BttvPanel>
   )
 }

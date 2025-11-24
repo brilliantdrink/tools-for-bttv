@@ -1,6 +1,7 @@
-import {JSX, Show} from 'solid-js'
+import {JSX, Show, Suspense} from 'solid-js'
 import cn from 'classnames'
 import {EmoteProvider} from '../util/emote-context'
+import {Spinner} from '../spinner'
 
 import dashWidgetStyles from '../dash-widget/dash-widget.module.scss'
 import styles from './panel.module.scss'
@@ -28,6 +29,7 @@ export default function BttvPanel(props: {
         <hr class={'chakra-divider'} />
       </Show>
       <div class={cn(styles.content, 'chakra-stack', props.sectionClass, styles[props.provider.toLowerCase()])}>
+        {/* suspense doesnt work here */}
         {props.children}
       </div>
     </div>

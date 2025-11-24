@@ -1,21 +1,24 @@
 import {Accessor, createResource, createSignal, onMount, Show} from 'solid-js'
 import cn from 'classnames'
-import {createChannelState} from './util/channel'
+import {createChannelInfo} from './util/channel'
 import {EmoteProvider} from './util/emote-context'
 import {useUser} from './util/user'
+import {createFlowLogin} from './createFlowLogin'
 
 import loginPromptStyles from './login-prompt.module.scss'
-import emoteBadgesStyles from './dash-widget/emote-badges.module.scss'
+import tooltipStyles from './tooltip.module.scss'
+import {Spinner} from './spinner'
 
-type LoginPromptPropsBase = { provider: EmoteProvider, refetch: () => void }
-type LoginPromptPropsChannel = { channelDisplayName: Accessor<string>, channelId: Accessor<string> }
-type LoginPromptProps = LoginPromptPropsBase | (LoginPromptPropsBase & LoginPromptPropsChannel)
+interface LoginPromptProps {
+  provider: EmoteProvider,
+  refetch: () => void
+  channelDisplayName: Accessor<string | null>,
+  channelId: Accessor<string | null>
+  compact?: boolean
+}
 
 export default function LoginPrompt(props: LoginPromptProps) {
-  const channelState = createChannelState(props.provider)
-  const channelDisplayName = 'channelDisplayName' in props ? props.channelDisplayName : channelState.channelDisplayName
-  const channelId = 'channelId' in props ? props.channelId : channelState.channelId
-  const {userId} = useUser(props.provider)
+  const {id: userId} = createChannelInfo(props.provider)
 
   const [loginButtonClicked, setLoginButtonClicked] = createSignal(false)
   const [isLoginAttempt, setIsLoginAttempt] = createSignal<boolean | null>(null)
@@ -24,31 +27,14 @@ export default function LoginPrompt(props: LoginPromptProps) {
     return fetch(`https://${API_HOST}/twitch/client-id`).then(res => res.json())
   })
 
-  onMount(() => {
-    const location = new URL(window.location.toString())
-    if (!location.searchParams.get('state')) {
-      return setIsLoginAttempt(false)
-    } else setIsLoginAttempt(true)
-    const shouldBeTrusted = location.searchParams.get('state') === localStorage.getItem('twitchLoginState')
-    if (shouldBeTrusted) {
-      localStorage.removeItem('twitchLoginState')
-      const twitchCode = location.searchParams.get('code')
-      if (typeof twitchCode === 'string') {
-        localStorage.setItem('tfb-twitch_code', twitchCode)
-        fetch(`https://${API_HOST}/twitch/login`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({code: twitchCode})
-        }).then(res => {
-          if (res.ok) {
-            props.refetch()
-            const url = new URL(window.location.toString())
-            url.searchParams.forEach((_, key) => url.searchParams.delete(key))
-            window.history.replaceState(null, '', url.toString())
-          }
-        })
-      }
-    }
+  onMount(async () => {
+    const url = new URL(window.location.toString())
+    url.searchParams.forEach((_, key) => url.searchParams.delete(key))
+    window.history.replaceState(null, '', url.toString())
+    // I think we don't need this cause this component wouldn't be rendered if the twitch code was valid
+    // const existingCode = localStorage.getItem('tfb-twitch_code')
+    // if (existingCode) return setIsLoginAttempt(false)
+    createFlowLogin(setIsLoginAttempt, () => props.refetch())
   })
 
   function handleLoginClick() {
@@ -65,31 +51,32 @@ export default function LoginPrompt(props: LoginPromptProps) {
   }
 
   return <>
-    <div class={loginPromptStyles.wrapper}>
+    <div class={cn(loginPromptStyles.wrapper, props.compact && loginPromptStyles.compact)}>
       <Show when={isLoginAttempt() === false}>
-        <div class={loginPromptStyles.notice}>
-          This feature only works if {String(userId()) !== String(channelId()) ? `both ${channelDisplayName()} and ` : ' '}you are
-          logged into <em>Tools for BTTV</em>.
-          <div class={loginPromptStyles.info}>
-            <InfoIcon class={loginPromptStyles.icon} />
-            <div class={cn(loginPromptStyles.tooltip, emoteBadgesStyles.tooltip)}>
-              This feature saves editable data on <em>Tools for BTTV's</em> servers. To ensure that only broadcasters
-              and emote editors can view and edit that data, you need to authenticate with that server using your Twitch
-              account. If you are not the broadcaster, the broadcaster also has to log in to confirm you as an editor
-              to <em>Tools for BTTV's</em> servers.
+        <Show when={props.compact !== true}>
+          <div class={loginPromptStyles.notice}>
+            This feature only works
+            if {String(userId()) !== String(props.channelId()) ? `both ${props.channelDisplayName()} and ` : ' '}you are
+            logged into <em>Tools for BTTV</em>.
+            <div class={cn(loginPromptStyles.info, tooltipStyles.trigger)}>
+              <InfoIcon class={loginPromptStyles.icon} />
+              <div class={cn(loginPromptStyles.tooltip, tooltipStyles.tooltip)}>
+                This feature saves editable data on <em>Tools for BTTV's</em> servers. To ensure that only broadcasters
+                and emote editors can view and edit that data, you need to authenticate with that server using your
+                Twitch
+                account. If you are not the broadcaster, the broadcaster also has to log in to confirm you as an editor
+                to <em>Tools for BTTV's</em> servers.
+              </div>
             </div>
           </div>
-        </div>
-        <button class={loginPromptStyles.button} disabled={loginButtonClicked()} onClick={handleLoginClick}>
+        </Show>
+        <button class={cn(loginPromptStyles.button, props.compact && loginPromptStyles.inline)}
+                disabled={loginButtonClicked()} onClick={handleLoginClick}>
           Log in with Twitch
         </button>
       </Show>
       <Show when={isLoginAttempt() !== false}>
-        <div class="css-gmuwbf">
-          <div class="chakra-spinner _spinner_1lcgb_25 css-nkpswe">
-            <span class="css-8b45rq">Loading...</span>
-          </div>
-        </div>
+        <Spinner centered />
       </Show>
     </div>
   </>
@@ -107,11 +94,15 @@ function InfoIcon(props: { class: string }) {
   )
 }
 
-export function ForbiddenError(props: { provider: EmoteProvider, channelDisplayName?: Accessor<string> }) {
-  const channelDisplayName = props.channelDisplayName ?? createChannelState(props.provider).channelDisplayName
+export function ForbiddenError(props: {
+  provider: EmoteProvider,
+  channelDisplayName: Accessor<string | null>,
+  compact?: boolean
+}) {
+  const channelDisplayName = props.channelDisplayName
 
   return (
-    <div class={loginPromptStyles.wrapper}>
+    <div class={cn(loginPromptStyles.wrapper, props.compact && loginPromptStyles.inline)}>
       <div class={loginPromptStyles.notice}>
         {channelDisplayName()} needs to log into <em>Tools for BTTV</em> to confirm you as an emote editor of this
         channel.

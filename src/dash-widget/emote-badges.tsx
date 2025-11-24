@@ -1,13 +1,13 @@
 import {Accessor, createMemo, Resource, Show} from 'solid-js'
 import cn from 'classnames'
-// import {mean} from 'mathjs'
 import {createVisibilityObserver} from '@solid-primitives/intersection-observer'
 import {createEmoteUsagesResource} from '../util/emote-usage'
-import {createChannelState} from '../util/channel'
+import {createChannelInfo} from '../util/channel'
 import {EmoteProvider} from '../util/emote-context'
 import {createBatchedValues} from '../util/batched-resource'
 
 import emoteBadgeStyles from './emote-badges.module.scss'
+import tooltipStyles from '../tooltip.module.scss'
 import {createAccumulatedValues} from '../util/accumulated-values'
 import {createEmoteNotesResource} from '../util/emote-notes'
 import {createLatched} from '../util/latched'
@@ -21,8 +21,8 @@ const usageWords = {
 const numberFormatter = Intl.NumberFormat('en', {notation: 'compact'})
 
 export default function EmoteBadges(props: { emoteId: string, provider: EmoteProvider }) {
-  const {channelId} = createChannelState(props.provider)
-  let visCatcher: HTMLDivElement | undefined;
+  const {id: channelId} = createChannelInfo(props.provider)
+  let visCatcher: HTMLDivElement | undefined = undefined;
   const useVisibilityObserver = createVisibilityObserver({threshold: 0.1});
   const visible = useVisibilityObserver(() => visCatcher);
   const allVisibilities = createAccumulatedValues('visibility', props.emoteId, visible, true)
@@ -88,16 +88,19 @@ export default function EmoteBadges(props: { emoteId: string, provider: EmotePro
 
   return <>
     <div ref={visCatcher} class={emoteBadgeStyles.visCatcher} />
-    <div class={cn(emoteBadgeStyles.usage, usage() !== null ? usageClass() : emoteBadgeStyles.loading, emoteBadgeStyles[props.provider.toLowerCase()])}>
+    <div class={cn(emoteBadgeStyles.usage, emoteBadgeStyles[props.provider.toLowerCase()], tooltipStyles.trigger,
+      usage() !== null ? usageClass() : emoteBadgeStyles.loading,)}>
       <Show when={usage() !== null}>
         {formattedUsage()}
-        <div class={emoteBadgeStyles.tooltip}>{usageWords[usageClass()]} usage in the past 30 days</div>
+        <div class={cn(emoteBadgeStyles.tooltip, tooltipStyles.tooltip)}>{usageWords[usageClass()]} usage in the past 30
+          days
+        </div>
       </Show>
     </div>
     <Show when={note()?.doNotRemove}>
-      <div class={cn(emoteBadgeStyles.dnr, emoteBadgeStyles[props.provider.toLowerCase()])}>
+      <div class={cn(emoteBadgeStyles.dnr, emoteBadgeStyles[props.provider.toLowerCase()], tooltipStyles.trigger)}>
         <DNRIcon />
-        <div class={emoteBadgeStyles.tooltip}>"Do Not Remove" marker set</div>
+        <div class={cn(emoteBadgeStyles.tooltip, tooltipStyles.tooltip)}>"Do Not Remove" marker set</div>
       </div>
     </Show>
   </>

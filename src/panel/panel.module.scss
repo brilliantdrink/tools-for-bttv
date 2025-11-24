@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
 
+  //max-height: 20rem;
+
   .headingP {
     margin: 0;
   }
@@ -13,6 +15,7 @@
 
   .content {
     flex-grow: 1;
+    //overflow-y: auto;
 
     &.ffz {
       padding: 1rem 1.5rem;

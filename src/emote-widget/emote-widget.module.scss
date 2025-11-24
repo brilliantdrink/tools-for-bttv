@@ -1,4 +1,5 @@
 .col {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: .5rem;
@@ -20,8 +21,12 @@
   flex-direction: row;
   gap: 20px;
 
-  &.halfWidth, &.ffz {
+  &.halfWidth {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  &.ffz {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .twoWide {

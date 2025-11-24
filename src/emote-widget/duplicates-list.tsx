@@ -7,7 +7,7 @@ import dashWidgetStyles from '../dash-widget/dash-widget.module.scss'
 import widgetStyles from './emote-widget.module.scss'
 
 export default function DuplicatesList(props: {
-  channelId: Accessor<string>,
+  channelId: Accessor<string | null>,
   provider: EmoteProvider,
   emoteName: string,
   emoteId: string,
@@ -38,21 +38,21 @@ export default function DuplicatesList(props: {
       </Show>
       <Show when={overlapping()?.length ?? 0 > 0}>
         <p class={cn(widgetStyles.subHeader, props.provider === EmoteProvider.FFZ && widgetStyles.ffzSubHeader)}>
-          Overlapping
+          Exact name match
         </p>
         <div class={widgetStyles.emoteList}>
           <For each={overlapping()}>
-            {emote => <EmoteCard emote={emote} provider={props.provider} />}
+            {emote => <EmoteCard emote={emote} />}
           </For>
         </div>
       </Show>
       <Show when={likelyDupes()?.length ?? 0 > 0}>
         <p class={cn(widgetStyles.subHeader, props.provider === EmoteProvider.FFZ && widgetStyles.ffzSubHeader)}>
-          Likely duplicate
+          Non-exact name match
         </p>
         <div class={widgetStyles.emoteList}>
           <For each={likelyDupes()}>
-            {emote => <EmoteCard emote={emote} provider={props.provider} />}
+            {emote => <EmoteCard emote={emote} />}
           </For>
         </div>
       </Show>

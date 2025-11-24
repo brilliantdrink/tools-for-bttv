@@ -1,66 +1,83 @@
-import {createEffect, createSignal, onMount} from 'solid-js'
-import {queryFutureElement} from './future-element'
-import {BTTVgetChannelId} from './bttv-emotes'
+import {Accessor, createMemo} from 'solid-js'
 import {EmoteProvider} from './emote-context'
-import {FFZgetChannelDisplayName, FFZgetChannelId} from './ffz-emotes'
+import {
+  BTTVAccountData,
+  BTTVDashboardData,
+  createAccountMeta as createBTTVAccountMeta,
+  createDashboardMeta as createBTTVDashboardMeta
+} from './bttv-dashboard-meta'
+import {createAccountMeta as createFFZAccountMeta} from './ffz-user-meta'
+import {PickOneOnly} from './type'
 
-export function createChannelState(provider: EmoteProvider, observe = false) {
-  const [channelDisplayName, setChannelDisplayName] = createSignal<string>(null!)
-  const [channelName, setChannelName] = createSignal<string>(null!)
-  const [channelId, setChannelId] = createSignal<string>(null!)
+interface ChannelInfo {
+  id: Accessor<string | null>
+  name: Accessor<string | null>
+  displayName: Accessor<string | null>
+}
 
-  onMount(async () => {
-    if (!(provider in getChannelName)) return
-    await getChannelName[provider]().then(displayName => {
-      if (!displayName) return
-      setChannelDisplayName(displayName)
-      setChannelName(displayName.toLowerCase())
+export function createChannelInfo<P extends EmoteProvider>(provider: P, knownInfo?: Accessor<PickOneOnly<{
+  id: string | null,
+  emoteProviderId: string | null,
+  name: string | null,
+}>>): ChannelInfo & (P extends EmoteProvider.BTTV
+  ? { bttvId: Accessor<string | null> }
+  : (P extends EmoteProvider.FFZ
+    ? { ffzId: Accessor<string | null> }
+    : never)
+  ) {
+  if (provider === EmoteProvider.BTTV) {
+    const account = createBTTVAccountMeta()
+    const dashboards = createBTTVDashboardMeta()
+
+    const channel = createMemo(() => {
+      let accountData: undefined | BTTVAccountData | BTTVDashboardData
+      const knownInfoValue = knownInfo?.()
+      if (!knownInfoValue) {
+        accountData = account()
+      } else {
+        const infoKey = Object.keys(knownInfoValue)[0] as keyof typeof knownInfoValue
+        let value = knownInfoValue[infoKey]
+        if (!value) return undefined
+        if (infoKey === 'name') value = value.toLowerCase()
+        let accountKey: keyof (BTTVAccountData | BTTVDashboardData)
+        if (infoKey === 'id') accountKey = 'providerId'
+        else if (infoKey === 'emoteProviderId') accountKey = 'id'
+        else if (infoKey === 'name') accountKey = 'name'
+        else return undefined
+        accountData = [account(), ...dashboards() ?? []].filter(v => !!v)
+          .find(info => info[accountKey] === value)
+      }
+      return accountData
     })
-    if (observe) {
-      const observer = new MutationObserver(() => getChannelName[provider]().then(setChannelName))
-      observer.observe(
-        await queryFutureElement('[id*=menu-button]:has(img)') as HTMLElement,
-        {childList: true, subtree: true}
-      )
-    }
-  })
+    const id = createMemo(() => channel()?.providerId ?? null)
+    const name = createMemo(() => channel()?.name ?? null)
+    const displayName = createMemo(() => channel()?.displayName ?? null)
+    const bttvId = createMemo(() => channel()?.id ?? null)
 
-  createEffect(() => {
-    if (!channelName()) return
-    if (!(provider in getChannelId)) return
-    getChannelId[provider](channelName()).then(setChannelId)
-    getChannelDisplayName[provider as keyof typeof getChannelDisplayName]?.(channelName()).then(setChannelDisplayName)
-  })
+    // @ts-ignore
+    return {id, name, displayName, bttvId}
+  } else if (provider === EmoteProvider.FFZ) {
+    const ffzKnownInfo = createMemo<ReturnType<Parameters<typeof createFFZAccountMeta>[0]> | undefined>(() => {
+      const knownInfoValue = knownInfo?.()
+      if (!knownInfoValue) {
+        const avatar = document.querySelector('img.navbar-avatar') as null | HTMLImageElement
+        if (avatar) return {name: avatar.title}
+      } else {
+        if ('id' in knownInfoValue && knownInfoValue.id) return {id: knownInfoValue.id}
+        else if ('emoteProviderId' in knownInfoValue && knownInfoValue.emoteProviderId) return {ffzId: knownInfoValue.emoteProviderId}
+        else if ('name' in knownInfoValue && knownInfoValue.name) return {name: knownInfoValue.name}
+      }
+    })
+    const account = createFFZAccountMeta(ffzKnownInfo)
+    const id = createMemo(() => account()?.user.twitch_id.toString() ?? null)
+    const name = createMemo(() => account()?.user.name ?? null)
+    const displayName = createMemo(() => account()?.user.display_name ?? null)
+    const ffzId = createMemo(() => account()?.user.id.toString() ?? null)
 
-  if (observe) return {channelDisplayName, channelName, channelId}
-  else return {
-    channelDisplayName,
-    channelName,
-    channelId,
-    setChannelName: (name: string) => setChannelName(name.toLowerCase()),
-    setChannelId
+    // @ts-ignore
+    return {id, name, displayName, ffzId}
+  } else {
+    // @ts-ignore
+    return {id: () => null, name: () => null, displayName: () => null}
   }
-}
-
-const getChannelName = {
-  [EmoteProvider.BTTV]: getChannelDisplayNameBttv,
-  [EmoteProvider.FFZ]: getChannelDisplayNameFfz,
-}
-
-const getChannelDisplayName = {
-  [EmoteProvider.FFZ]: FFZgetChannelDisplayName,
-}
-
-const getChannelId = {
-  [EmoteProvider.BTTV]: BTTVgetChannelId,
-  [EmoteProvider.FFZ]: FFZgetChannelId,
-}
-
-export async function getChannelDisplayNameBttv() {
-  return (await queryFutureElement('[id*=menu-button]:has(img)') as HTMLElement).innerText.trim()
-}
-
-export async function getChannelDisplayNameFfz() {
-  const title = (document.querySelector('#channel')?.childNodes.item(0) as Text | undefined)?.wholeText.trim()
-  return title ?? (document.querySelector('img.navbar-avatar') as null | HTMLImageElement)?.title
 }

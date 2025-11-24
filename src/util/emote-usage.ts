@@ -1,16 +1,18 @@
 import {Accessor, createMemo, createResource, ResourceFetcher} from 'solid-js'
+import {makeCache} from '@solid-primitives/resource'
 import {batchedFetch} from './batched-fetch'
 import {EmoteProvider} from './emote-context'
-import {cache, makeCache} from '@solid-primitives/resource'
+import {makeBatchableCache} from './batchable-cache'
 
 export const DATE_RANGE_LENGTH = 5
 
 type EmoteUsage = Record<`${number}-${number}-${number}`, number>
 
-export function createEmoteUsagesResource(provider: EmoteProvider, emoteIds: Accessor<string[]>, channelId: Accessor<string>) {
-  // todo implement fail visualisation
+const usageCache = makeBatchableCache(key => key.split('-')[1])
+
+export function createEmoteUsagesCachedFetcher(provider: EmoteProvider) {
   const [fetcher] = makeCache((async ([channelId, emoteIds]) => {
-    const usageData = await batchedFetch(`https://${API_HOST}/emote/${provider.toLowerCase()}/${emoteIds.join(',')}/usage/${channelId}`, {
+    const usageData = channelId === null ? {} as EmoteUsage : await batchedFetch(`https://${API_HOST}/emote/${provider.toLowerCase()}/${emoteIds.join(',')}/usage/${channelId}`, {
       debounceTime: 300,
       useAuth: true,
     })
@@ -47,13 +49,29 @@ export function createEmoteUsagesResource(provider: EmoteProvider, emoteIds: Acc
     return formattedDatas
   }) as ResourceFetcher<[string, string[]], Record<string, [string, number][]>>, {
     expires: 1000 * 60 * 10,
-    storageKey: `usage-${channelId()}-${emoteIds().join('')}`
+    sourceHash: source => {
+      return source[1].map(v => source[0] + '-' + v).join(',')
+    },
+    cache: usageCache,
   })
-  const [usage] = createResource(createMemo(() => [channelId(), emoteIds()] as [string, string[]]), fetcher)
+  return fetcher
+}
+
+export function createEmoteUsagesResource(provider: EmoteProvider, emoteIds: Accessor<string[]>, channelId: Accessor<string | null>) {
+  // todo implement fail visualisation
+  const [usage] = createResource(createMemo(() => [channelId(), emoteIds()] as [string, string[]]), createEmoteUsagesCachedFetcher(provider))
   return usage
 }
 
-export const createEmoteUsageResource = (provider: EmoteProvider, emoteId: string, channelId: Accessor<string>) => {
-  const usage = createEmoteUsagesResource(provider, () => [emoteId], channelId)
-  return createMemo(() => Object.values(usage() ?? {})[0])
+export const createEmoteUsageResource = (provider: EmoteProvider, emoteId: string, channelId: Accessor<string | null>) => {
+  const fetcher = createEmoteUsagesCachedFetcher(provider)
+  const [usage] = createResource<[string, number][], [string, string[]], unknown>(
+    createMemo(() => [channelId(), [emoteId]] as [string, string[]]),
+    (source, info) => {
+      const fetched = fetcher(source, {...info, value: info.value ? {[source[0]]: info.value} : undefined})
+      if (fetched instanceof Promise) return fetched.then(array => Object.values(array ?? {})[0]) as Promise<[string, number][]>
+      else return Object.values(fetched ?? {})[0] as [string, number][]
+    }
+  )
+  return usage
 }
