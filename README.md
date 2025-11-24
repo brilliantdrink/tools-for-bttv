@@ -13,10 +13,11 @@ Current features:
 - Duplicate emotes detection for channel dashboard and on emote pages (available on BTTV and FFZ)
 - Emote usage data visible on dashboard and emote page (available on BTTV and FFZ)
 - Free-form notes and "do not remove" tags for emotes (available on BTTV and FFZ)
-
-These features will also be implemented for the other platforms. Planned features include:
-
 - Seasonal / themed emote collections / variants with automated (one-click) replacement for the whole collection
+  (available on BTTV and FFZ)
+
+Planned features include:
+
 - Notification (on-site) about deleted emotes
 - Emote fallbacks for deleted emotes
 - Categorize emote usage to check which bots are using which emotes
