@@ -1,5 +1,4 @@
 import {Accessor, createEffect, createMemo, createSignal, For, on, onMount, Show} from 'solid-js'
-import cloneDeep from 'lodash.clonedeep'
 import cn from 'classnames'
 import {IoChevronDown} from 'solid-icons/io'
 import {createStore, reconcile} from 'solid-js/store'
@@ -315,7 +314,7 @@ export function TransferModal(props: GroupModalProps) {
         signals={emoteModalSignals} provider={props.provider} confirmLabel={'Select'}
         channelId={targetChannelId} currentEmote={emoteToSelect}
         onConfirm={() => {
-          const newTransferList = cloneDeep(transferListMods())
+          const newTransferList = transferListMods().map(item => item ? {...item} as Emote : null)
           const index = transferList()?.findIndex(([_, altEmote]) => altEmote.providerId === emoteToSelect()?.id)
           const selectedEmote = emotes()?.find(emote => emote.id === emoteModalSignals.selected())
           if (selectedEmote && typeof index === 'number' && index !== -1) {
