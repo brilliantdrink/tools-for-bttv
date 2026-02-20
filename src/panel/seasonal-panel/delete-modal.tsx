@@ -1,11 +1,12 @@
-import {Accessor, createEffect, createSignal, For, Resource, Show} from 'solid-js'
+import {Accessor, createEffect, createSignal, For, Show} from 'solid-js'
 import cn from 'classnames'
 import Modal from '../../modal'
 import {EmoteCard} from '../../emote-card'
 import {createSeasonalGroupsResource, Emote, EmoteGroup} from './seasonal-query'
-import {EmoteData, EmoteProvider} from '../../util/emote-context'
+import {EmoteProvider} from '../../util/emote-context'
 import {authFetch} from '../../util/auth-fetch'
 import {Spinner} from '../../spinner'
+import error, {ErrorType} from '../../util/error'
 
 import seasonalPanelStyle from '../seasonal-panel.module.scss'
 
@@ -32,7 +33,6 @@ interface DeleteModalProps {
   currentGroup: Accessor<EmoteGroup | null>
   currentPair: Accessor<[Emote, Emote] | undefined>
   seasonalGroups: ReturnType<typeof createSeasonalGroupsResource>
-  emotes: Accessor<EmoteData[]>
 }
 
 export function DeleteModal(props: DeleteModalProps) {
@@ -46,7 +46,19 @@ export function DeleteModal(props: DeleteModalProps) {
     props.signals.setLoading(true)
     const currentGroupValue = props.currentGroup()
     if (!currentGroupValue) {
-      // todo show error
+      let message = 'Something went wrong'
+      if (props.signals.type() === DeleteModalType.Group) {
+        message = 'Couldn\'t delete group'
+      } else if (props.signals.type() === DeleteModalType.Emote) {
+        message = 'Couldn\'t remove emote from group'
+      }
+      error({
+        type: ErrorType.Action,
+        provider: props.provider,
+        name: 'confirm (DeleteModal)',
+        message,
+        detail: `currentGroupValue is falsy: ${currentGroupValue}`,
+      })
       return
     }
     if (props.signals.type() === DeleteModalType.Group) {

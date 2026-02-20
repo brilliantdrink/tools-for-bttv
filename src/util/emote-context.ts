@@ -1,4 +1,4 @@
-import {Accessor, createEffect, createMemo, createResource} from 'solid-js'
+import {Accessor, createEffect, createMemo, createResource, Resource} from 'solid-js'
 import {bttvOrigin, PartialBy} from '../variables'
 import {getFFZEmotes, getFFZGlobalEmotes} from './ffz-emotes'
 import {getBTTVCachedEmotes, getBTTVEmotes, getBTTVGlobalEmotes} from './bttv-emotes'
@@ -36,7 +36,7 @@ export const emoteCache = new Proxy(makeBatchableCache(), {
 }) as Record<string, ProviderlessEmoteDataCacheEntry>
 
 export function useEmotes(channelId: Accessor<string | null>) {
-  let bttvEmotes
+  let bttvEmotes: Resource<ProviderlessEmoteData[]>
   // hmmm
   if (location.host === bttvOrigin) {
     const knownBTTVInfo = createMemo(() => ({id: channelId()}))
@@ -81,6 +81,26 @@ export function useEmotes(channelId: Accessor<string | null>) {
     return emotes
   })
 
+  const state = createMemo(() => {
+    const resources = [bttvEmotes, ffzEmotes, bttvGlobalEmotes, ffzGlobalEmotes]
+    if (resources.every(resource => resource.state === 'unresolved'))
+      return 'unresolved'
+    else if (resources.some(resource => resource.state === 'pending'))
+      return 'pending'
+    else if (resources.every(resource => resource.state === 'ready'))
+      return 'ready'
+    else if (resources.some(resource => resource.state === 'refreshing'))
+      return 'refreshing'
+    else if (resources.some(resource => resource.state === 'errored'))
+      return 'errored'
+    else if (resources.every(resource => resource.state === 'ready' || resource.state === 'unresolved')) {
+      return 'ready*'
+    } else {
+      console.error('impossible state (emotes)', resources.map(resource => resource.state))
+      return 'impossible'
+    }
+  })
+
   const overlapping = createMemo(() => {
     const currentEmotes = emotes()
     if (!currentEmotes) return
@@ -110,5 +130,5 @@ export function useEmotes(channelId: Accessor<string | null>) {
     return likelyDuplicates
   })
 
-  return {emotes, overlapping, likelyDuplicates}
+  return {emotes, overlapping, likelyDuplicates, state}
 }

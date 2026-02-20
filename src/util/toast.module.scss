@@ -1,0 +1,17 @@
+@use 'sass:color';
+@use '../variables' as v;
+
+.toast {
+  padding: .5em 1.3em;
+  font-size: 14px;
+  $intermediate-red: color.mix(v.color(red, 900), v.color(gray, 900), 25%);
+  background: #{color.mix($intermediate-red, black, 75%)};
+  border-radius: var(--chakra-radii-md, 6px);
+  border: 1px solid #{v.color(red, 900)};
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  .icon {
+    font-size: 1.5em;
+    color: #{v.color(red, 500)};
+  }
+}

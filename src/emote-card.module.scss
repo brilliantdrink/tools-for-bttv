@@ -45,17 +45,68 @@
       transform: scale(.98);
     }
   }
+
+  &.marked {
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: v.color(orange, 500);
+      border-radius: var(--chakra-radii-md, 6px);
+      opacity: .1;
+      z-index: -1;
+    }
+
+    $border-width: 2px;
+    border: $border-width solid v.color(orange, 800);
+    border-radius: var(--chakra-radii-md, 6px);
+
+    .mark {
+      position: absolute;
+      bottom: -$border-width;
+      left: -$border-width;
+      padding: 0 .4em;
+
+      background: v.color(orange, 600);
+      border-radius: 0 calc(var(--chakra-radii-md, 6px));
+      color: v.color(gray, 800);
+      font-size: 0.6em;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
 }
 
 .emoteImage {
   height: 1.5em;
+  width: auto;
   max-width: 100%;
+  color: #{v.color(whiteAlpha, 700)};
+
+  &.questionIcon {
+    :nth-child(1) {
+      color: #{v.color(whiteAlpha, 500)};
+    }
+
+    :nth-child(2) {
+      fill-opacity: .2;
+    }
+  }
 }
 
 .emoteName {
   font-size: var(--card-font-size);
   text-align: center;
   text-overflow: clip;
+
+  &.cardLabel {
+    font-style: italic;
+    font-size: .7em;
+    color: #{v.color(whiteAlpha, 700)};
+  }
 }
 
 .emoteProviderWrapper {

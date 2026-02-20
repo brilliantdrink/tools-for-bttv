@@ -5,6 +5,7 @@ import Modal from '../../modal'
 import {createSeasonalGroupsResource, EmoteGroup} from './seasonal-query'
 import {EmoteProvider} from '../../util/emote-context'
 import {Spinner} from '../../spinner'
+import error, {ErrorType} from '../../util/error'
 
 import seasonalPanelStyle from '../seasonal-panel.module.scss'
 
@@ -66,7 +67,13 @@ export function GroupModal(props: GroupModalProps) {
     } else if (props.signals.type() === GroupModalType.Edit) {
       const currentGroupValue = props.currentGroup()
       if (!currentGroupValue) {
-        // todo show error
+        error({
+          type: ErrorType.Action,
+          provider: props.provider,
+          name: 'confirm (GroupModal)',
+          message: 'Couldn\'t update group',
+          detail: `currentGroupValue is falsy: ${currentGroupValue}`,
+        })
         return
       }
       authFetch(`https://${API_HOST}/group/${props.channelId()}/${currentGroupValue.id}`, {

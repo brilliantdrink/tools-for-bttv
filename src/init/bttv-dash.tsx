@@ -9,13 +9,16 @@ import {CurrentChannelProvider} from '../util/track-current-channel'
 const emoteIdFromLinkRegex = /emotes\/([^/]+)/
 
 export default async function initBttvDash(attachDelay: number) {
+  const sidebar = await queryFutureElement('.chakra-tabs:has([role="tablist"])') as HTMLDivElement
+  const root = document.createElement('div')
+  sidebar.appendChild(root)
   const detachWidget = render(
     () => (
       <CurrentChannelProvider provider={EmoteProvider.BTTV}>
         <DashWidget provider={EmoteProvider.BTTV} />
       </CurrentChannelProvider>
     ),
-    await queryFutureElement('.chakra-tabs:has([role="tablist"])') as HTMLDivElement
+    root
   )
   let detachEmotes: (() => void)[] = []
   const abort = new AbortController()
@@ -32,16 +35,20 @@ export default async function initBttvDash(attachDelay: number) {
       {childList: true, subtree: true}
     )
     for await (const element of queryFutureElements('[class*=emoteCard_]', {abort: abort.signal}) as AsyncGenerator<HTMLAnchorElement>) {
-      detachEmotes.push(
-        render(() => {
-          const emoteId = element.href.match(emoteIdFromLinkRegex)?.[1] ?? ''
-          return (
-            <CurrentChannelProvider provider={EmoteProvider.BTTV}>
-              <EmoteBadges emoteId={emoteId} provider={EmoteProvider.BTTV} />
-            </CurrentChannelProvider>
-          )
-        }, element)
-      )
+      const root = document.createElement('div')
+      element.appendChild(root)
+      const detach = render(() => {
+        const emoteId = element.href.match(emoteIdFromLinkRegex)?.[1] ?? ''
+        return (
+          <CurrentChannelProvider provider={EmoteProvider.BTTV}>
+            <EmoteBadges emoteId={emoteId} provider={EmoteProvider.BTTV} />
+          </CurrentChannelProvider>
+        )
+      }, root)
+      detachEmotes.push(() => {
+        detach()
+        root.remove()
+      })
     }
   }, attachDelay, {leading: false, trailing: true})
 

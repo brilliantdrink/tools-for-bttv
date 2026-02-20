@@ -151,12 +151,24 @@
 }
 
 .label {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
 
-  span {
+  .groupLabel {
     font-size: 12px;
+  }
+
+  .chevron {
+    position: absolute;
+    right: .5em;
+    font-size: 16px;
+    bottom: .4em;
+  }
+
+  :global(.solid-select-control):has([data-is-active='true']) ~ .chevron {
+    transform: rotate(180deg);
   }
 }
 
@@ -164,10 +176,69 @@
   appearance: none;
   height: 32px;
   color: v.color(whiteAlpha, 900);
-  border-radius: var(--chakra-radii-md, 6px);
+  font-weight: normal;
+  border-radius: var(--chakra-radii-md, 6px) !important; // cause of third party override, i just dont wanna :(
   border: 1px solid v.color(whiteAlpha, 300);
   background: none;
   padding: 0 8px;
+
+  :global(.solid-select-placeholder) {
+    color: v.color(whiteAlpha, 600);
+  }
+
+  :global(.solid-select-control), :global(.solid-select-placeholder), :global(.solid-select-single-value) {
+    height: 100%;
+  }
+
+  :global(.solid-select-placeholder), :global(.solid-select-single-value) {
+    display: flex;
+    align-items: center;
+
+    small {
+      pointer-events: none;
+      margin-inline-start: .3em;
+      margin-bottom: -0.4ch;
+    }
+  }
+
+  :global(.solid-select-list) {
+    width: calc(100% + 8px * 2 + 1px * 2);
+    position: relative;
+    left: -8px - 1px;
+    top: 8px;
+    padding: 4px 0;
+    background: var(--modal-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--chakra-radii-md, 6px);
+
+    :global(.solid-select-option) {
+      padding: 4px 8px;
+
+      &:has(.groupLabel) {
+        position: relative;
+        margin-top: 1.3em;
+      }
+
+      .groupLabel {
+        position: absolute;
+        top: -1.3em;
+        display: block;
+        pointer-events: none;
+      }
+
+      &:hover:not([data-disabled='true']) {
+        background: v.color(whiteAlpha, 50);
+      }
+
+      &[data-focused='true']:not([data-disabled='true']) {
+        background: v.color(whiteAlpha, 200);
+      }
+
+      &[data-disabled='true'], .groupLabel {
+        color: v.color(whiteAlpha, 600);
+      }
+    }
+  }
 }
 
 .modal {
@@ -177,12 +248,17 @@
     height: 34 * 16px;
   }
 
+  &.tall > div {
+    max-height: min(95vh, 48 * 16px);
+  }
+
   p:not(.heading) {
     font-size: 14px;
   }
 
   .heading {
     font-weight: 600;
+    max-width: calc(100% - 1em);
   }
 
   small {

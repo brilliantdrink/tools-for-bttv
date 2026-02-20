@@ -1,0 +1,190 @@
+diff --git a/node_modules/@thisbeyond/solid-select/dist/index.d.ts b/node_modules/@thisbeyond/solid-select/dist/index.d.ts
+index 5e63859..9d6f7f9 100644
+--- a/node_modules/@thisbeyond/solid-select/dist/index.d.ts
++++ b/node_modules/@thisbeyond/solid-select/dist/index.d.ts
+@@ -104,7 +104,7 @@ interface CommonProps {
+     emptyPlaceholder?: string;
+     ref?: Ref<HTMLInputElement>;
+ }
+-type SelectProps = CreateSelectProps & Partial<CommonProps>;
++type SelectProps = CreateSelectProps & Partial<CommonProps> & {children: JSX.Element};
+ declare const SelectContext: solid_js.Context<{
+     options: solid_js.Accessor<any>;
+     value: () => any;
+diff --git a/node_modules/@thisbeyond/solid-select/dist/index.js b/node_modules/@thisbeyond/solid-select/dist/index.js
+index 69833b0..cea1d67 100644
+--- a/node_modules/@thisbeyond/solid-select/dist/index.js
++++ b/node_modules/@thisbeyond/solid-select/dist/index.js
+@@ -101,7 +101,9 @@ var createSelect = (props) => {
+   }, {
+     defer: true
+   }));
+-  const onFocusIn = () => setIsActive(true);
++  const onFocusIn = () => {
++    setIsActive(true)
++  };
+   const onFocusOut = () => {
+     setIsActive(false);
+     setIsOpen(false);
+@@ -487,7 +489,7 @@ var Select = (props) => {
+             get format() {
+               return local.format;
+             }
+-          })];
++          }), ...(Array.isArray(local.children) ? local.children : [local.children])];
+         }
+       });
+     }
+@@ -499,6 +501,7 @@ var Container = (props) => {
+     var _el$ = _tmpl$2();
+     _el$.$$mousedown = (event) => {
+       select.onMouseDown(event);
++      if (event.target.classList.contains('solid-select-option')) return
+       event.currentTarget.getElementsByTagName("input")[0].focus();
+     };
+     addEventListener(_el$, "focusout", select.onFocusOut, true);
+@@ -725,7 +728,13 @@ var Option = (props) => {
+   };
+   return (() => {
+     var _el$10 = _tmpl$9();
+-    _el$10.$$click = () => select.pickOption(props.option);
++    _el$10.$$click = () => {
++      const container = _el$10.parentElement.parentElement
++      select.pickOption(props.option)
++      setTimeout(() => {
++        container.getElementsByTagName("input")[0].blur();
++      }, 0)
++    };
+     use(scrollIntoViewOnFocus, _el$10);
+     insert(_el$10, () => props.children);
+     effect((_p$) => {
+diff --git a/node_modules/@thisbeyond/solid-select/dist/style.css b/node_modules/@thisbeyond/solid-select/dist/style.css
+index df7194c..553e1e9 100644
+--- a/node_modules/@thisbeyond/solid-select/dist/style.css
++++ b/node_modules/@thisbeyond/solid-select/dist/style.css
+@@ -1,6 +1,6 @@
+ .solid-select-container * {
+   box-sizing: border-box;
+-  border: 0px solid transparent;
++  /*border: 0px solid transparent;*/
+   line-height: normal;
+ }
+ .solid-select-container[data-disabled="true"] {
+@@ -8,23 +8,23 @@
+ }
+ .solid-select-container {
+   position: relative;
+-  background-color: rgb(255, 255, 255);
++  /*background-color: rgb(255, 255, 255);*/
+   box-sizing: border-box;
+   border-radius: 0.25rem;
+   min-width: 5rem;
+ }
+ .solid-select-control {
+-  border: 1px solid rgb(229, 231, 235);
++  /*border: 1px solid rgb(229, 231, 235);*/
+   border-radius: inherit;
+   display: grid;
+   grid-template-columns: repeat(1, minmax(0, 1fr));
+-  padding: 0.25rem 0.5rem;
+-  outline: 2px solid transparent;
+-  outline-offset: 2px;
++  /*padding: 0.25rem 0.5rem;*/
++  /*outline: 2px solid transparent;*/
++  /*outline-offset: 2px;*/
+ }
+ .solid-select-control[data-disabled="true"] {
+-  background-color: rgb(243, 244, 246);
+-  border-color: rgb(209, 213, 219);
++  /*background-color: rgb(243, 244, 246);*/
++  /*border-color: rgb(209, 213, 219);*/
+ }
+ .solid-select-control[data-multiple="true"][data-has-value="true"] {
+   display: flex;
+@@ -33,10 +33,10 @@
+   gap: 0.25rem;
+ }
+ .solid-select-control:focus-within {
+-  outline-color: rgb(209, 213, 219);
++  /*outline-color: rgb(209, 213, 219);*/
+ }
+ .solid-select-placeholder {
+-  color: rgb(156, 163, 175);
++  /*color: rgb(156, 163, 175);*/
+   grid-column-start: 1;
+   grid-row-start: 1;
+ }
+@@ -48,13 +48,13 @@
+   text-overflow: ellipsis;
+ }
+ .solid-select-multi-value {
+-  background-color: rgb(243, 244, 246);
++  /*background-color: rgb(243, 244, 246);*/
+   border-radius: 0.25rem;
+   display: flex;
+   align-items: center;
+   font-size: 85%;
+-  padding-left: 4px;
+-  padding-right: 4px;
++  /*padding-left: 4px;*/
++  /*padding-right: 4px;*/
+   min-width: 20px;
+ }
+ .solid-select-multi-value > span {
+@@ -63,8 +63,8 @@
+   text-overflow: ellipsis;
+ }
+ .solid-select-multi-value-remove {
+-  padding-left: 0.25rem;
+-  padding-right: 0.25rem;
++  /*padding-left: 0.25rem;*/
++  /*padding-right: 0.25rem;*/
+ }
+ .solid-select-multi-value-remove:hover {
+   text-shadow:
+@@ -95,11 +95,11 @@
+ .solid-select-list {
+   background-color: inherit;
+   border-radius: 0.125rem;
+-  margin-top: 0.25rem;
++  /*margin-top: 0.25rem;*/
+   max-height: 50vh;
+   width: 100%;
+   overflow-y: auto;
+-  padding: 0.5rem;
++  /*padding: 0.5rem;*/
+   position: absolute;
+   box-shadow:
+     0 0 #0000,
+@@ -109,10 +109,10 @@
+   z-index: 1;
+ }
+ .solid-select-option:hover {
+-  background-color: rgb(229, 231, 235);
++  /*background-color: rgb(229, 231, 235);*/
+ }
+ .solid-select-option[data-focused="true"] {
+-  background-color: rgb(243, 244, 246);
++  /*background-color: rgb(243, 244, 246);*/
+ }
+ .solid-select-option mark {
+   background-color: unset;
+@@ -121,15 +121,15 @@
+ }
+ .solid-select-option {
+   cursor: default;
+-  padding: 0.5rem 1rem;
++  /*padding: 0.5rem 1rem;*/
+   user-select: none;
+ }
+ .solid-select-option[data-disabled="true"] {
+   pointer-events: none;
+-  color: rgb(156, 163, 175);
++  /*color: rgb(156, 163, 175);*/
+ }
+ .solid-select-list-placeholder {
+   cursor: default;
+-  padding: 0.5rem 1rem;
++  /*padding: 0.5rem 1rem;*/
+   user-select: none;
+ }

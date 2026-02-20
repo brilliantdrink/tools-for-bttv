@@ -3,6 +3,9 @@ import {EmoteProvider} from '../util/emote-context'
 import {DuplicatesPanel} from '../panel/duplicates-panel'
 import {EmoteWidget} from '../emote-widget/emote-widget'
 import {CurrentChannelProvider} from '../util/track-current-channel'
+import getChannelNames from '../ffz-get-channel-names'
+import error, {ErrorType} from '../util/error'
+import {AttachmentPoints} from '../variables'
 
 export default async function initFfzEmote() {
   const ffzEmoteSidebar = document.querySelector('#sidebar') as HTMLDivElement
@@ -12,19 +15,20 @@ export default async function initFfzEmote() {
   const ffzPanelClass = 'panel panel-default'
   const ffzEmoteName = location.pathname.match(/^\/emoticon\/([0-9]+)-(.+)$/)?.[2]
   const ffzEmoteId = location.pathname.match(/^\/emoticon\/([0-9]+)-(.+)$/)?.[1]
-  if (!ffzEmoteName || !ffzEmoteId) return // todo: show error (and report to api)
+  if (!ffzEmoteName || !ffzEmoteId) {
+    error({
+      type: ErrorType.Initialisation,
+      provider: EmoteProvider.FFZ,
+      attachment: AttachmentPoints.FfzEmote,
+      message: <span>Something went wrong initializing <i>Tools for BTTV</i></span>,
+      detail: `Either emote id or code not found: found id: "${ffzEmoteId}", found name: "${ffzEmoteName}"`,
+    })
+    return
+    }
   const ffzSectionClass = ''
   const ffzSectionClassName = ''
   const ffzHeadingClass = 'panel-heading'
-  const channelsAddPanel = Array.from(ffzEmoteSidebar.querySelectorAll('.panel')).find(el =>
-    (el.querySelector('.panel-heading') as HTMLElement | null)?.innerText.toLowerCase() === 'Add to Channel'.toLowerCase()
-  ) as HTMLElement | null
-  const channelsRemovePanel = Array.from(ffzEmoteSidebar.querySelectorAll('.panel')).find(el =>
-    (el.querySelector('.panel-heading') as HTMLElement | null)?.innerText.toLowerCase() === 'Remove from Channel'.toLowerCase()
-  ) as HTMLElement | null
-  const ffzEmotesChannelNames = Array.from((channelsAddPanel?.querySelectorAll('.list-group-item') ?? []))
-    .concat(Array.from((channelsRemovePanel?.querySelectorAll('.list-group-item') ?? [])))
-    .map(el => (el.childNodes.item(0) as Text).wholeText.trim())
+  const ffzEmotesChannelNames = getChannelNames()
   const ffzAppData = {
     emoteName: ffzEmoteName, emoteId: ffzEmoteId, panelClass: ffzPanelClass,
     channelNames: ffzEmotesChannelNames,

@@ -1,0 +1,37 @@
+@use 'variables' as v;
+@use 'sass:map';
+
+.button {
+  &.bttv {
+    position: relative;
+    padding: 0;
+
+    height: 2.5rem;
+    min-width: 2.5rem;
+
+    appearance: none;
+    font-size: 1.1rem;
+    border-radius: var(--chakra-radii-md, 6px);
+    color: #{v.color(whiteAlpha, 900)};
+    background: #{v.color(whiteAlpha, 200)};
+    outline: transparent solid 2px;
+    outline-offset: 2px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: #{v.color(whiteAlpha, 300)};
+    }
+
+    &:active {
+      background: #{v.color(whiteAlpha, 400)};
+    }
+  }
+
+  .tooltip {
+    font-size: .8rem;
+    top: -1.6rem;
+  }
+}

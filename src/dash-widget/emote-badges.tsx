@@ -11,6 +11,7 @@ import tooltipStyles from '../tooltip.module.scss'
 import {createAccumulatedValues} from '../util/accumulated-values'
 import {createEmoteNotesResource} from '../util/emote-notes'
 import {createLatched} from '../util/latched'
+import {useCurrentChannelContext} from '../util/track-current-channel'
 
 const usageWords = {
   [emoteBadgeStyles.noUse]: 'No',
@@ -21,7 +22,8 @@ const usageWords = {
 const numberFormatter = Intl.NumberFormat('en', {notation: 'compact'})
 
 export default function EmoteBadges(props: { emoteId: string, provider: EmoteProvider }) {
-  const {id: channelId} = createChannelInfo(props.provider)
+  const currentChannelContext = useCurrentChannelContext()
+  const {id: channelId} = createChannelInfo(props.provider, currentChannelContext.knownInfo)
   let visCatcher: HTMLDivElement | undefined = undefined;
   const useVisibilityObserver = createVisibilityObserver({threshold: 0.1});
   const visible = useVisibilityObserver(() => visCatcher);
@@ -92,8 +94,8 @@ export default function EmoteBadges(props: { emoteId: string, provider: EmotePro
       usage() !== null ? usageClass() : emoteBadgeStyles.loading,)}>
       <Show when={usage() !== null}>
         {formattedUsage()}
-        <div class={cn(emoteBadgeStyles.tooltip, tooltipStyles.tooltip)}>{usageWords[usageClass()]} usage in the past 30
-          days
+        <div class={cn(emoteBadgeStyles.tooltip, tooltipStyles.tooltip)}>
+          {usageWords[usageClass()]} usage in the past 30 days
         </div>
       </Show>
     </div>

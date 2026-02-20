@@ -1,12 +1,11 @@
-import {Accessor, createEffect, createMemo, createResource, createSignal, For, Resource, Setter, Show} from 'solid-js'
+import {Accessor, createEffect, createMemo, createResource, createSignal, For, Resource, Show} from 'solid-js'
 import {createScheduled, debounce} from '@solid-primitives/scheduled'
 import cn from 'classnames'
 import levenshtein from 'damerau-levenshtein'
 import Modal from '../../modal'
 import {EmoteCard} from '../../emote-card'
-import {createSeasonalGroupsResource, Emote, EmoteGroup} from './seasonal-query'
-import {EmoteData, EmoteProvider} from '../../util/emote-context'
-import {authFetch} from '../../util/auth-fetch'
+import {EmoteGroup} from './seasonal-query'
+import {EmoteData, EmoteProvider, useEmotes} from '../../util/emote-context'
 import {emoteIdFromLinkRegex} from '../../init/ffz-dash'
 import Sp from '../../util/space'
 import {Spinner} from '../../spinner'
@@ -38,24 +37,24 @@ export function createEmoteModalSignals() {
 }
 
 interface EmoteModalProps {
-  emoteId: string
   provider: EmoteProvider
   channelId: Accessor<string | null>
   signals: ReturnType<typeof createEmoteModalSignals>
-  currentEmote: Resource<EmoteData | null>
-  currentGroup: Accessor<EmoteGroup | null>
-  setCurrentGroup: Setter<EmoteGroup | null>
-  seasonalGroups: ReturnType<typeof createSeasonalGroupsResource>
-  emotes: Accessor<EmoteData[]>
+  currentEmote: Resource<EmoteData | null> | Accessor<EmoteData | null>
+  currentGroup?: Accessor<EmoteGroup | null>
+  onConfirm: () => void
+  confirmLabel?: string
 }
 
 export function EmoteModal(props: EmoteModalProps) {
   createEffect(() => {
     if (!props.signals.open()) {
+      props.signals.setSelected(null)
       props.signals.setSearch('')
       props.signals.setLoading(false)
     }
   })
+  const {emotes} = useEmotes(props.channelId)
   const scheduled = createScheduled(fn => debounce(fn, 800))
   const debouncedQuery = createMemo<string>(prev => scheduled() ? props.signals.search() : prev ?? '')
   const [searchedEmotes] = createResource<{
@@ -86,50 +85,6 @@ export function EmoteModal(props: EmoteModalProps) {
     searchedEmotes()?.find(emote => emote.id === props.signals.selected())?.code ?? prev ?? null
   )
 
-  function confirm() {
-    props.signals.setLoading(true)
-    const currentGroupValue = props.currentGroup()
-    if (!currentGroupValue) {
-      // todo show error
-      return
-    }
-    let targetEmoteId: string | null | undefined = null
-    let altEmoteId: string | null | undefined = null
-    if (props.signals.type() === EmoteModalType.AddAlternative) {
-      targetEmoteId = props.currentEmote()?.id
-      altEmoteId = props.signals.selected()
-    } else if (props.signals.type() === EmoteModalType.AsAlternative) {
-      targetEmoteId = props.signals.selected()
-      altEmoteId = props.currentEmote()?.id
-    }
-    if (!targetEmoteId || !altEmoteId) return // todo show error
-    new Promise<void>(resolve => setTimeout(resolve, 1000))
-    authFetch(`https://${API_HOST}/group/${props.channelId()}/${currentGroupValue.id}/${props.provider.toLowerCase()}/${targetEmoteId}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({alternative: altEmoteId}),
-    }).then(() => {
-      props.seasonalGroups.mutateSeasonalGroups(props.seasonalGroups.seasonalGroupsArray().map(group => {
-        if (group.id !== currentGroupValue.id) return group
-        const pairIndex = group.emotes.findIndex(([targetEmote]) => targetEmote.providerId === targetEmoteId)
-        let newEmotes: [Emote, Emote][]
-        if (pairIndex !== -1) {
-          newEmotes = group.emotes.toSpliced(pairIndex, 1, [
-            group.emotes[pairIndex][0],
-            {providerId: altEmoteId, provider: props.provider.toLowerCase() as Emote['provider'], code: ''}
-          ])
-        } else {
-          newEmotes = [...group.emotes, [
-            {providerId: targetEmoteId, provider: props.provider.toLowerCase() as Emote['provider'], code: ''},
-            {providerId: altEmoteId, provider: props.provider.toLowerCase() as Emote['provider'], code: ''}
-          ]]
-        }
-        return {...group, emotes: newEmotes}
-      }))
-      props.signals.setOpen(false)
-    })
-  }
-
   return (
     <Modal class={cn(seasonalPanelStyle.modal, seasonalPanelStyle.fixedHeight)} open={props.signals.open}
            setOpen={props.signals.setOpen} closeOnOverlayClick={true} provider={props.provider}>
@@ -141,7 +96,9 @@ export function EmoteModal(props: EmoteModalProps) {
           Select Seasonal Alternative
         </Show>
       </p>
-      <p>for group "{props.currentGroup()?.name}"</p>
+      <Show when={props.currentGroup}>
+        <p>for group "{props.currentGroup?.()?.name}"</p>
+      </Show>
       <small>Currently, only emotes from the same provider ({props.provider}) can be selected</small>
       <label class={seasonalPanelStyle.label}>
         <span>Search</span>
@@ -165,10 +122,10 @@ export function EmoteModal(props: EmoteModalProps) {
       </Show>
       <div class={seasonalPanelStyle.emoteList}>
         <Show when={props.signals.type() === EmoteModalType.AsAlternative}>
-          <For each={props.emotes()?.filter(emote => {
+          <For each={emotes()?.filter(emote => {
             return emote.provider === props.provider &&
               !emote.global &&
-              emote.id !== props.emoteId &&
+              emote.id !== props.currentEmote()?.id &&
               (!props.signals.search() || levenshtein(props.signals.search().toUpperCase(), emote.code.toUpperCase()).similarity > .1)
           }).sort((emoteA, emoteB) => {
             const search = !props.signals.search() ? (props.currentEmote()?.code ?? '') : props.signals.search()
@@ -191,11 +148,11 @@ export function EmoteModal(props: EmoteModalProps) {
       </div>
       <button class={cn(seasonalPanelStyle.button, seasonalPanelStyle.primary)}
               disabled={props.signals.buttonDisabled()}
-              onClick={confirm}>
+              onClick={props.onConfirm}>
         <Show when={props.signals.loading()}>
           <Spinner />
         </Show>
-        Create
+        {props.confirmLabel ?? 'Create'}
       </button>
     </Modal>)
 }

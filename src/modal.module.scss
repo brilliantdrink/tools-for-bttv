@@ -62,10 +62,11 @@
   .modal {
     width: 24 * 16px;
     min-height: 8 * 16px;
-    max-height: 34 * 16px;
+    max-height: min(95vh, 34 * 16px);
     --modal-background: #{v.color(gray, 900)};
+    --border-color: #{v.color(gray, 800)};
     background: var(--modal-background);
-    border: 1px solid v.color(gray, 800);
+    border: 1px solid var(--border-color);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     border-radius: var(--chakra-radii-md, 6px);
 
@@ -78,7 +79,7 @@
 
     &.ffz {
       --modal-background: #2a2a2a;
-      border-color: #444;
+      --border-color: #444;
     }
 
     @mixin open {
@@ -90,6 +91,10 @@
     }
 
     @include openClose(meta.get-mixin(open), meta.get-mixin(closed));
+
+    > * {
+      margin: 0;
+    }
 
     .close {
       position: absolute;

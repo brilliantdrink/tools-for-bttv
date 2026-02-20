@@ -1,5 +1,6 @@
 import {createResource} from 'solid-js'
 import {makeCache} from '@solid-primitives/resource'
+import {BTTVEmote} from './bttv-emotes'
 
 export function createDashboardMeta() {
   const [cachedFetcher] = makeCache(() => {
@@ -28,6 +29,26 @@ export interface BTTVDashboardData {
     dashboards: number,
     emoteSets: number
   },
+}
+
+export function createEmoteSetMeta(setId: string) {
+  const [cachedFetcher] = makeCache(() => {
+    return fetch(`https://api.betterttv.net/3/emote_sets/${setId}`, {
+      headers: {Authorization: `Bearer ${localStorage.getItem('USER_TOKEN')?.replaceAll('"', '')}`}
+    }).then(res => {
+      return res.json() as Promise<BTTVSetData>
+    })
+  }, {sourceHash: () => `bttv-set-${setId}`})
+  const [resource] = createResource(cachedFetcher)
+  return resource
+}
+
+export interface BTTVSetData {
+  id	:string
+  name:	string
+  /** @description id */
+  user:	string
+  sharedEmotes:	BTTVEmote[]
 }
 
 export function createAccountMeta() {

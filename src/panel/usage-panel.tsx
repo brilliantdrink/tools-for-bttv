@@ -1,4 +1,4 @@
-import {createMemo, For, Suspense} from 'solid-js'
+import {createMemo, For, JSX, JSXElement, Suspense} from 'solid-js'
 import cn from 'classnames'
 import {EmoteProvider} from '../util/emote-context'
 import {createChannelInfo} from '../util/channel'
@@ -19,7 +19,7 @@ interface UsagePanelProps {
 
 const dateFormatter = new Intl.DateTimeFormat("en", {day: 'numeric', month: 'short'})
 // lookahead not optional because end ranges like in "Aug 31 - Sep 4" must not be selected
-const dateEnMonthDaySpaceSelector = /([a-z])\s+(\d)(?=[^A-Za-z]+$)/
+const dateEnMonthDaySpaceSelector = /([A-Za-z]+)\s+(\d+\s+\W\s+\d+)$/
 const dateEnSeparateMonthSplitter = /([A-Za-z]+ \d+\s+\W)\s+([A-Za-z]+ \d+)$/
 
 export function UsagePanel(props: UsagePanelProps) {
@@ -31,10 +31,16 @@ export function UsagePanel(props: UsagePanelProps) {
     const end = new Date(dateString)
     const start = new Date(end)
     start.setDate(start.getDate() - (DATE_RANGE_LENGTH - 1))
-    return dateFormatter.formatRange(start, end)
-      .replace(dateEnMonthDaySpaceSelector, '$1<br>$2')
-      .replace(dateEnSeparateMonthSplitter, '$1<br>$2')
-      .replace('–', '-')
+    const range = dateFormatter.formatRange(start, end).replace('–', '-')
+    let matched: RegExpMatchArray | null
+    const result: JSX.Element[] = []
+    if ((matched = range.match(dateEnMonthDaySpaceSelector)) || (matched = range.match(dateEnSeparateMonthSplitter))) {
+      result.push(matched[1], <br />, matched[2])
+    } else {
+      result.push(range)
+    }
+    return result
+
   }))
   const maxValue = createMemo(() =>
     Math.max(1,
@@ -64,7 +70,9 @@ export function UsagePanel(props: UsagePanelProps) {
               }}>
                 <span class={emoteUsageStyles.value}>{period[1]}</span>
               </div>
-              <span class={emoteUsageStyles.label} innerHTML={labels()[index()]} />
+              <span class={emoteUsageStyles.label}>
+                {labels()[index()]}
+              </span>
             </>
           }</For>
         </div>

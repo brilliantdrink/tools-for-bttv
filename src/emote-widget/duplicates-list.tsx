@@ -1,4 +1,4 @@
-import {Accessor, createMemo, For, Show} from 'solid-js'
+import {Accessor, createEffect, createMemo, For, Show} from 'solid-js'
 import cn from 'classnames'
 import {EmoteProvider, useEmotes} from '../util/emote-context'
 import {EmoteCard} from '../emote-card'
@@ -15,11 +15,15 @@ export default function DuplicatesList(props: {
 }) {
   const {emotes} = useEmotes(props.channelId)
 
+  createEffect(() => {
+    console.log(emotes(), props.emoteId)
+  })
+
   const overlapping = createMemo(() => emotes()?.filter(emote =>
-    emote.id !== props.emoteId && emote.code === props.emoteName
+    String(emote.id) !== String(props.emoteId) && emote.code === props.emoteName
   ))
   const likelyDupes = createMemo(() => emotes()?.filter(emote =>
-    emote.id !== props.emoteId && emote.code !== props.emoteName && emote.code.toUpperCase() === props.emoteName.toUpperCase()
+    String(emote.id) !== String(props.emoteId) && emote.code !== props.emoteName && emote.code.toUpperCase() === props.emoteName.toUpperCase()
   ))
 
   // todo: show loading

@@ -28,12 +28,8 @@ export default function LoginPrompt(props: LoginPromptProps) {
   })
 
   onMount(async () => {
-    const url = new URL(window.location.toString())
-    url.searchParams.forEach((_, key) => url.searchParams.delete(key))
+    const url = new URL(location.pathname, location.origin)
     window.history.replaceState(null, '', url.toString())
-    // I think we don't need this cause this component wouldn't be rendered if the twitch code was valid
-    // const existingCode = localStorage.getItem('tfb-twitch_code')
-    // if (existingCode) return setIsLoginAttempt(false)
     createFlowLogin(setIsLoginAttempt, () => props.refetch())
   })
 
@@ -46,6 +42,7 @@ export default function LoginPrompt(props: LoginPromptProps) {
     twitchAuthUrl.searchParams.set('scope', ['user:read:chat'].join(' '))
     const state = crypto.randomUUID()
     twitchAuthUrl.searchParams.set('state', state + '_' + window.location.toString())
+    localStorage.removeItem('tfb-twitch_code')
     localStorage.setItem('twitchLoginState', state)
     window.open(twitchAuthUrl.toString(), '_self')
   }

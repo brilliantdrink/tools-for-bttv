@@ -50,43 +50,14 @@
 
   .emote {
     width: 100%;
+    align-self: stretch;
     max-width: initial;
     border-radius: var(--chakra-radii-md, 6px);
     background: v.color(blackAlpha, 400);
-    cursor: default;
-    pointer-events: none;
 
-    &.missing {
-      &:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        background: v.color(orange, 500);
-        border-radius: var(--chakra-radii-md, 6px);
-        opacity: .1;
-        z-index: -1;
-      }
-
-      &:after {
-        content: 'Not in channel';
-        position: absolute;
-        bottom: -1px;
-        left: -1px;
-        padding: 0 .4em;
-
-        background: v.color(orange, 600);
-        border-radius: 0 calc(var(--chakra-radii-md, 6px));
-        color: v.color(gray, 800);
-        font-size: 0.6em;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      border: 1px solid v.color(orange, 800);
-      border-radius: var(--chakra-radii-md, 6px);
+    &.noninteractive {
+      cursor: default;
+      pointer-events: none;
     }
   }
 

@@ -4,9 +4,11 @@ import {queryFutureElement} from '../util/future-element'
 import {EmoteProvider} from '../util/emote-context'
 import {EmoteWidget} from '../emote-widget/emote-widget'
 import {CurrentChannelProvider} from '../util/track-current-channel'
+import error, {ErrorType} from '../util/error'
+import {AttachmentPoints} from '../variables'
 
 export default async function initBttvEmote() {
-  const currentUrl = window.location.href
+  const currentUrl = location.pathname
   let column: HTMLDivElement = await queryFutureElement('[class*=_column]')
   const root = document.createElement('div')
 
@@ -14,11 +16,30 @@ export default async function initBttvEmote() {
   const bttvPanelClass = bttvFirstEmotePanel.classList.toString()
   const bttvEmoteName = (bttvFirstEmotePanel.querySelector('[class*=_section] > p') as HTMLParagraphElement | null)?.innerText.trim()
   const bttvEmoteId = location.pathname.match(/^\/emotes\/([0-9a-f]+)(\/.)?$/)?.[1]
-  if (!bttvEmoteName || !bttvEmoteId) return // todo: show error (and report to api)
+  if (!bttvEmoteName || !bttvEmoteId) {
+    error({
+      type: ErrorType.Initialisation,
+      provider: EmoteProvider.BTTV,
+      attachment: AttachmentPoints.BttvEmote,
+      message: <span>Something went wrong initializing <i>Tools for BTTV</i></span>,
+      detail: `Either emote id or code not found: found id: "${bttvEmoteId}", found name: "${bttvEmoteName}"`,
+    })
+    return
+  }
   const bttvSectionClass = bttvFirstEmotePanel.querySelector('[class*=_section]')?.classList.toString()
   const bttvSectionClassName = Array.from(bttvFirstEmotePanel.querySelector('[class*=_section]')?.classList ?? [])
     .find(name => name.includes('_section'))
-  if (!bttvSectionClass || !bttvSectionClassName) return // todo: show error (and report to api)
+  if (!bttvSectionClass || !bttvSectionClassName) {
+    const el = bttvFirstEmotePanel.querySelector('[class*=_section]')
+    error({
+      type: ErrorType.Initialisation,
+      provider: EmoteProvider.BTTV,
+      attachment: AttachmentPoints.BttvEmote,
+      message: <span>Something went wrong initializing <i>Tools for BTTV</i></span>,
+      detail: `Either section element or section class not found: class list: element: ${!!el}, full class: "${bttvSectionClass}", class name: "${bttvSectionClassName}"`,
+    })
+    return
+  }
   let detach: () => void = () => 0
   const reattach = debounce(async () => {
     detach()
@@ -42,9 +63,10 @@ export default async function initBttvEmote() {
   }, 300, {leading: false, trailing: true})
   await reattach()
   const observer = new MutationObserver(() => {
-    if (currentUrl !== window.location.href) {
+    if (currentUrl !== location.pathname) {
       observer.disconnect()
       detach()
+      return
     }
     if (root.isConnected) return
     reattach()

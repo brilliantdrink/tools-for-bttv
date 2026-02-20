@@ -1,5 +1,5 @@
-import {Accessor, createEffect, For, Show} from 'solid-js'
-import {SetStoreFunction} from 'solid-js/store'
+import {Accessor, createEffect, createMemo, For, Show} from 'solid-js'
+import {reconcile, SetStoreFunction} from 'solid-js/store'
 import cn from 'classnames'
 import {Emote} from './seasonal-query'
 import {EmoteProvider} from '../../util/emote-context'
@@ -25,17 +25,29 @@ interface ApplyModalSelectPageProps extends ApplyModalProps {
 }
 
 export function ApplyModalSelectPage(props: ApplyModalSelectPageProps) {
+  function setType(value: ApplyModalType) {
+    props.signals.setType(value)
+    props.setApplyEmotes(reconcile({}))
+  }
+
+  const buttonDisabled = createMemo(() => {
+    return props.filteredEmotes().applicableEmotes
+      .concat(props.filteredEmotes().unapplicableEmotes)
+      .filter(([emote]) => props.applyEmotes[emote.providerId])
+      .length == 0
+  })
+
   return (<>
     <fieldset class={styles.segmented}>
       <label class={styles.label}>
         <span>Apply</span>
         <input type={'radio'} checked={props.signals.type() === ApplyModalType.Apply}
-               onChange={() => props.signals.setType(ApplyModalType.Apply)} />
+               onChange={() => setType(ApplyModalType.Apply)} />
       </label>
       <label class={styles.label}>
         <span>Unapply</span>
         <input type={'radio'} checked={props.signals.type() === ApplyModalType.Unapply}
-               onChange={() => props.signals.setType(ApplyModalType.Unapply)} />
+               onChange={() => setType(ApplyModalType.Unapply)} />
       </label>
     </fieldset>
     <small>
@@ -69,7 +81,7 @@ export function ApplyModalSelectPage(props: ApplyModalSelectPageProps) {
         props.filteredEmotes().unapplicableEmotes
           .toSorted(([a], [b]) => a.code.localeCompare(b.code))
       }>{pair =>
-        <EmoteReplacement pair={pair} direction={props.signals.type()} unapplicable
+        <EmoteReplacement pair={pair} mode={props.signals.type()} unapplicable={'Not in channel'}
                           uncheckable={props.unapplicableUncheckable}
                           applyEmotes={props.applyEmotes} setApplyEmotes={props.setApplyEmotes} />
       }</For>
@@ -77,11 +89,12 @@ export function ApplyModalSelectPage(props: ApplyModalSelectPageProps) {
         props.filteredEmotes().applicableEmotes
           .toSorted(([a], [b]) => a.code.localeCompare(b.code))
       }>{pair =>
-        <EmoteReplacement pair={pair} direction={props.signals.type()}
+        <EmoteReplacement pair={pair} mode={props.signals.type()}
                           applyEmotes={props.applyEmotes} setApplyEmotes={props.setApplyEmotes} />
       }</For>
     </div>
-    <button class={cn(seasonalPanelStyle.button, seasonalPanelStyle.primary)} onClick={props.confirm}>
+    <button class={cn(seasonalPanelStyle.button, seasonalPanelStyle.primary)} disabled={buttonDisabled()}
+            onClick={props.confirm}>
       <Show when={props.signals.type() === ApplyModalType.Apply}>Apply Emotes</Show>
       <Show when={props.signals.type() === ApplyModalType.Unapply}>Unapply Emotes</Show>
     </button>

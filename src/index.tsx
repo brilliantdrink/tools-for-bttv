@@ -1,6 +1,7 @@
 import './hook-fetch'
 import {
   AttachmentPoints,
+  bttvDashBasePath,
   bttvDashPath,
   bttvOrigin,
   ffzDashPath,
@@ -9,6 +10,7 @@ import {
   isFfzEmotePath
 } from './variables'
 import initBttvDash from './init/bttv-dash'
+import initBttvDashSet from './init/bttv-dash-set'
 import initBttvEmote from './init/bttv-emote'
 import initFfzDash from './init/ffz-dash'
 import initFfzEmote from './init/ffz-emote'
@@ -33,6 +35,7 @@ if (DIST == 'userscript') {
 function findAttachmentPoint() {
   if (location.host === bttvOrigin) {
     if (location.pathname.includes(bttvDashPath)) return AttachmentPoints.BttvDash
+    else if (location.pathname.includes(bttvDashBasePath)) return AttachmentPoints.BttvDashSet
     if (isBttvEmotePath(location.pathname)) return AttachmentPoints.BttvEmote
   } else if (location.host === ffzOrigin) {
     if (location.pathname.includes(ffzDashPath)) return AttachmentPoints.FfzDash
@@ -59,13 +62,16 @@ let detach: () => void = () => 0
 
 const ATTACH_DELAY = 700
 
-window.addEventListener('load', () => {
+function init() {
   observeLocation(async (attachmentPoint) => {
     detach()
     switch (attachmentPoint) {
       case AttachmentPoints.BttvDash:
         detach = await initBttvDash(ATTACH_DELAY)
         await bttvDashPerfTweaks()
+        break
+      case AttachmentPoints.BttvDashSet:
+        detach = await initBttvDashSet()
         break
       case AttachmentPoints.BttvEmote:
         detach = await initBttvEmote().catch(console.error) ?? detach
@@ -78,4 +84,12 @@ window.addEventListener('load', () => {
         break
     }
   })
-})
+}
+
+if (DIST == 'userscript') {
+  if (document.readyState === 'complete') {
+    console.warn('Tools for BTTV script loaded after bttv scripts. This may lead to decreased performance.')
+    init()
+  }
+}
+window.addEventListener('load', init)

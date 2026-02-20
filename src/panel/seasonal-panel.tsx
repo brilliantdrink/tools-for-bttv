@@ -11,6 +11,7 @@ import {createSeasonalGroupsResource, EmoteGroup} from './seasonal-panel/seasona
 import {createGroupModalSignals, GroupModal, GroupModalType} from './seasonal-panel/group-modal'
 import {createEmoteModalSignals, EmoteModal, EmoteModalType} from './seasonal-panel/emote-modal'
 import {createDeleteModalSignals, DeleteModal, DeleteModalType} from './seasonal-panel/delete-modal'
+import {addAlternative} from './seasonal-panel/add-alternative-action'
 import {useCurrentChannelContext} from '../util/track-current-channel'
 import LoginPrompt, {ForbiddenError, GenericError} from '../login-prompt'
 import {getBTTVEmote} from '../util/bttv-emotes'
@@ -112,7 +113,14 @@ export function SeasonalPanel(props: UsagePanelProps) {
             New Seasonal Group
           </button>
           <GroupModal signals={groupModalSignals} {...context()} />
-          <EmoteModal signals={emoteModalSignals} {...context()} />
+          <EmoteModal signals={emoteModalSignals} {...context()} onConfirm={() => addAlternative({
+            provider: props.provider,
+            channelId: channelId(),
+            signals: emoteModalSignals,
+            currentGroup: currentGroup(),
+            currentEmote: currentEmote() ?? null,
+            seasonalGroups: seasonalGroupsResource
+          })} />
           <DeleteModal signals={deleteModalSignals} {...context()} />
         </Show>
         <Show when={(seasonalGroups() as any)?.['error'] !== undefined}>

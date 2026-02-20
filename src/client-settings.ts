@@ -8,7 +8,7 @@ export const clientSettings = {
     key = this.getKey(key)
     if (localStorage.getItem(key) === content) return false
     localStorage.setItem(key, content)
-    for (const callback of this.listeners[key]) {
+    if (key in this.listeners) for (const callback of this.listeners[key]) {
       callback(content)
     }
   },
